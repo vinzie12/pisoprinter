@@ -1,0 +1,2993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piso Printer Admin Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding: 10px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        .header h1 { color: #1e3c72; font-size: 2rem; margin-bottom: 10px; }
+        .header p { color: #666; font-size: 1rem; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body { padding: 5px; }
+            .container { padding: 0 5px; }
+            .header { 
+                padding: 15px; 
+                margin-bottom: 15px; 
+                border-radius: 10px; 
+            }
+            .header h1 { font-size: 1.5rem; }
+            .header p { font-size: 0.9rem; }
+            .dashboard-grid { 
+                grid-template-columns: 1fr; 
+                gap: 10px; 
+                margin-bottom: 15px; 
+            }
+            .card { 
+                padding: 15px; 
+                border-radius: 10px; 
+            }
+            .card-header { 
+                margin-bottom: 15px; 
+                padding-bottom: 10px; 
+            }
+            .card-icon { font-size: 1.5rem; margin-right: 10px; }
+            .card-title { font-size: 1.1rem; }
+            .metric-value { font-size: 2rem; }
+            .metric-label { font-size: 0.8rem; }
+            .controls { 
+                flex-direction: column; 
+                gap: 10px; 
+                margin-bottom: 15px; 
+            }
+            .date-range-picker { 
+                flex-direction: column; 
+                gap: 5px; 
+                width: 100%; 
+                background: rgba(255, 255, 255, 0.15); 
+                padding: 10px; 
+            }
+            .date-range-picker input { 
+                width: 100%; 
+                font-size: 16px; 
+            }
+            .btn { 
+                padding: 10px 15px; 
+                font-size: 0.9rem; 
+                margin: 2px; 
+                width: 100%; 
+            }
+            .coin-breakdown { 
+                grid-template-columns: 1fr; 
+                gap: 10px; 
+            }
+            .coin-item { 
+                padding: 10px; 
+                border-radius: 8px; 
+            }
+            .coin-value { font-size: 1.2rem; }
+            .coin-count { font-size: 0.8rem; }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.3rem; }
+            .header p { font-size: 0.8rem; }
+            .card { padding: 10px; }
+            .card-header { margin-bottom: 10px; }
+            .card-icon { font-size: 1.2rem; }
+            .card-title { font-size: 1rem; }
+            .metric-value { font-size: 1.5rem; }
+            .btn { 
+                padding: 8px 12px; 
+                font-size: 0.8rem; 
+            }
+            .header div[style*="margin-top: 15px"] {
+                margin-top: 10px !important;
+            }
+            .header div[style*="margin-top: 15px"] span {
+                font-size: 0.9rem !important;
+            }
+            .header div[style*="margin-top: 15px"] .btn {
+                font-size: 0.8rem;
+                padding: 8px 12px;
+                min-width: 100px;
+            }
+        }
+        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: transform 0.3s ease; }
+        .card:hover { transform: translateY(-5px); }
+        .card-header { display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0; }
+        .card-icon { font-size: 2rem; margin-right: 15px; width: 50px; text-align: center; }
+        .card-title { font-size: 1.3rem; font-weight: 600; color: #333; }
+        .metric { text-align: center; margin-bottom: 15px; }
+        .metric-value { font-size: 2.5rem; font-weight: 700; color: #1e3c72; margin-bottom: 5px; }
+        .metric-label { color: #666; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        .btn { background: #1e3c72; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; margin: 5px; }
+        .btn:hover { background: #2a5298; transform: translateY(-2px); }
+        .controls { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .date-range-picker { 
+            display: flex; 
+            gap: 10px; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            background: rgba(255, 255, 255, 0.1); 
+            padding: 15px; 
+            border-radius: 10px; 
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .date-range-picker label { color: white; font-weight: 600; font-size: 0.9rem; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        .date-picker { 
+            padding: 10px; 
+            border: 2px solid #e9ecef; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            background: white; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .coin-breakdown { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+        .coin-item { text-align: center; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef; }
+        .coin-value { font-size: 1.5rem; font-weight: 700; color: #1e3c72; margin-bottom: 5px; }
+        .coin-count { color: #666; font-size: 0.9rem; }
+        
+        /* Cleanup Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            opacity: 0.7;
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .cleanup-options {
+            display: grid;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .cleanup-option {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .cleanup-option h4 {
+            margin: 0 0 10px 0;
+            color: #1e3c72;
+            font-size: 1.1rem;
+        }
+        
+        .cleanup-option p {
+            margin: 0 0 15px 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .input-group input {
+            width: 80px;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: center;
+        }
+        
+        .input-group label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .cleanup-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .cleanup-stats {
+            background: #e8f2ff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #d1ecf1;
+        }
+        
+        .cleanup-stats h4 {
+            margin: 0 0 15px 0;
+            color: #1e3c72;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #d1ecf1;
+        }
+        
+        .stat-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        .btn.danger {
+            background: #dc3545;
+        }
+        
+        .btn.danger:hover {
+            background: #c82333;
+        }
+        
+        .btn.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn.warning:hover {
+            background: #e0a800;
+        }
+        
+        /* Settings Modal Styles */
+        .settings-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+        
+        .tab-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            background: #1e3c72;
+            color: white;
+            border-color: #1e3c72;
+        }
+        
+        .tab-btn:hover:not(.active) {
+            background: #e9ecef;
+            border-color: #1e3c72;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .settings-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+        
+        .settings-section h4 {
+            margin: 0 0 10px 0;
+            color: #1e3c72;
+            font-size: 1.2rem;
+        }
+        
+        .settings-section p {
+            margin: 0 0 20px 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .info-label {
+            display: block;
+            color: #666;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            display: block;
+            color: #1e3c72;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .success-message {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        /* Role-based visibility */
+        .superadmin-only {
+            display: none;
+        }
+        
+        .superadmin-only.show {
+            display: inline-block;
+        }
+        
+        /* Modal Responsive */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+                max-height: 90vh;
+            }
+            
+            .modal-header {
+                padding: 15px;
+            }
+            
+            .modal-header h3 {
+                font-size: 1.2rem;
+            }
+            
+            .modal-body {
+                padding: 20px;
+            }
+            
+            .cleanup-options {
+                gap: 15px;
+            }
+            
+            .cleanup-option {
+                padding: 15px;
+            }
+            
+            .cleanup-option h4 {
+                font-size: 1rem;
+            }
+            
+            .cleanup-buttons {
+                flex-direction: column;
+            }
+            
+            .cleanup-buttons .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .stat-item {
+                padding: 10px;
+            }
+            
+            .stat-value {
+                font-size: 1.2rem;
+            }
+            
+            .settings-tabs {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .tab-btn {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .settings-section {
+                padding: 15px;
+            }
+            
+            .form-group input {
+                font-size: 16px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .form-actions .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .modal-content {
+                width: 98%;
+                margin: 5% auto;
+            }
+            
+            .modal-header {
+                padding: 10px;
+            }
+            
+            .modal-header h3 {
+                font-size: 1rem;
+            }
+            
+            .modal-body {
+                padding: 15px;
+            }
+            
+            .cleanup-option {
+                padding: 10px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .settings-section {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖨️ Piso Printer Admin Dashboard</h1>
+            <p>Monitor daily coin totals, transactions, and detect anomalies</p>
+            <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <span style="color: #1e3c72; font-weight: 600; font-size: 1rem;">Welcome, <span id="adminUsername">Admin</span></span>
+                <button class="btn" onclick="logout()" style="background: #6c757d; width: auto; min-width: 120px;">🚪 Logout</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="date-range-picker">
+                <label for="dateFrom">From:</label>
+                <input type="date" id="dateFrom" class="date-picker">
+                <label for="dateTo">To:</label>
+                <input type="date" id="dateTo" class="date-picker">
+            </div>
+            <button class="btn" onclick="refreshData()">🔄 Refresh</button>
+            <button class="btn" onclick="showTableLogs()">📋 Table Logs</button>
+            <button class="btn superadmin-only" onclick="syncData()">🔄 Sync Data</button>
+            <button class="btn superadmin-only" onclick="exportData()">📊 Export Data</button>
+            <button class="btn superadmin-only" onclick="checkAnomalies()">🔍 Check Anomalies</button>
+            <button class="btn" onclick="showSettings()">⚙️ Settings</button>
+            <button class="btn superadmin-only" onclick="showManualCoinEntry()">🪙 Manual Coin Entry</button>
+            <button class="btn superadmin-only" onclick="syncCoinData()">🔄 Sync Coin Data</button>
+            <button class="btn danger superadmin-only" onclick="showCleanupOptions()">🗑️ Cleanup Data</button>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Date Range Summary</div>
+                </div>
+                <div id="todaySummary">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🪙</div>
+                    <div class="card-title">Coin Breakdown</div>
+                    <button class="btn" onclick="loadCoinBreakdown()" style="margin-left: auto; padding: 5px 10px; font-size: 0.8rem;" title="Refresh coin breakdown">🔄</button>
+                </div>
+                <div id="coinBreakdown">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+
+                <!-- <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">🚨</div>
+                        <div class="card-title">Anomaly Detection</div>
+                    </div>
+                    <div id="anomalyScore">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div> -->
+        </div>
+    </div>
+
+    <!-- Cleanup Modal -->
+    <div id="cleanupModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🗑️ Database Cleanup</h3>
+                <span class="close" onclick="closeCleanupModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="cleanup-options">
+                    <div class="cleanup-option">
+                        <h4>🧹 Clear All Data</h4>
+                        <p>Remove all records but keep database structure</p>
+                        <button class="btn danger" onclick="cleanupData('all')">Clear Everything</button>
+                    </div>
+                    
+                    <div class="cleanup-option">
+                        <h4>📅 Clear Old Data</h4>
+                        <p>Remove data older than specified days</p>
+                        <div class="input-group">
+                            <input type="number" id="daysOld" value="30" min="1" max="365">
+                            <label>days old</label>
+                        </div>
+                        <button class="btn warning" onclick="cleanupData('old')">Clear Old Data</button>
+                    </div>
+                    
+                    <div class="cleanup-option">
+                        <h4>🎯 Selective Cleanup</h4>
+                        <p>Clear specific types of data</p>
+                        <div class="cleanup-buttons">
+                            <button class="btn" onclick="cleanupData('coins')">Clear Coins</button>
+                            <button class="btn" onclick="cleanupData('summaries')">Clear Summaries</button>
+                            <button class="btn" onclick="cleanupData('transactions')">Clear Transactions</button>
+                            <button class="btn" onclick="cleanupData('anomalies')">Clear Anomalies</button>
+                        </div>
+                    </div>
+                    
+                    <div class="cleanup-option">
+                        <h4>🔄 Reset Counters</h4>
+                        <p>Reset auto-increment counters to start from 1</p>
+                        <button class="btn" onclick="cleanupData('reset-counters')">Reset Counters</button>
+                    </div>
+                </div>
+                
+                <div class="cleanup-stats" id="cleanupStats">
+                    <h4>📊 Current Database Size</h4>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-value" id="statCoins">-</span>
+                            <span class="stat-label">Coin Records</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="statSummaries">-</span>
+                            <span class="stat-label">Daily Summaries</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="statTransactions">-</span>
+                            <span class="stat-label">Transactions</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="statAnomalies">-</span>
+                            <span class="stat-label">Anomalies</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Admin Settings</h3>
+                <span class="close" onclick="closeSettingsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="success-message"></div>
+                <div class="error-message"></div>
+                <div class="settings-tabs">
+                    <button class="tab-btn active" onclick="showTab('credentials')">🔐 Credentials</button>
+                    <button class="tab-btn" onclick="showTab('printer')">🖨️ Printer Settings</button>
+                    <button class="tab-btn" onclick="showTab('pricing')">💰 Pricing Settings</button>
+                    <!-- <button class="tab-btn" onclick="showTab('security')">🛡️ Security</button>
+                    <button class="tab-btn" onclick="showTab('system')">⚙️ System</button> -->
+                </div>
+                
+                <!-- Credentials Tab -->
+                <div id="credentials-tab" class="tab-content active">
+                    <div class="settings-section">
+                        <h4>🔐 Change Admin Password</h4>
+                        <p>Update your password for admin access</p>
+                        
+                        <form id="credentialsForm" onsubmit="updateCredentials(event)">
+                            <div class="form-group">
+                                <label for="currentUsername">Current Username</label>
+                                <input type="text" id="currentUsername" readonly value="" style="background-color: #f8f9fa; color: #666;">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="currentPassword">Current Password</label>
+                                <input type="password" id="currentPassword" required placeholder="Enter current password">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="newPassword">New Password</label>
+                                <input type="password" id="newPassword" required placeholder="Enter new password">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm New Password</label>
+                                <input type="password" id="confirmPassword" required placeholder="Confirm new password">
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn">💾 Update Password</button>
+                                <button type="button" class="btn" onclick="resetCredentialsForm()">🔄 Reset</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Printer Settings Tab -->
+                <div id="printer-tab" class="tab-content">
+                    <div class="settings-section">
+                        <h4>🖨️ Default Printer Configuration</h4>
+                        <p>Configure your default printer and printing settings</p>
+                        
+                        <div class="form-group">
+                            <label for="defaultPrinter">Default Printer</label>
+                            <select id="defaultPrinter" class="form-group input" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                                <option value="">Loading printers...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="defaultPaperSize">Default Paper Size</label>
+                            <select id="defaultPaperSize" class="form-group input" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                                <option value="short">Letter (8.5" x 11")</option>
+                                <option value="long">Legal (8.5" x 14")</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="defaultColorMode">Default Color Mode</label>
+                            <select id="defaultColorMode" class="form-group input" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                                <option value="grayscale">Grayscale (Black & White)</option>
+                                <option value="colored">Color</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="defaultPrintQuality">Default Print Quality</label>
+                            <select id="defaultPrintQuality" class="form-group input" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                                <option value="draft">Draft (Fast, Lower Quality)</option>
+                                <option value="normal">Normal (Balanced)</option>
+                                <option value="high">High (Best Quality)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn" onclick="savePrinterSettings()">💾 Save Printer Settings</button>
+                            <button class="btn" onclick="refreshPrinterList()">🔄 Refresh Printer List</button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4>📋 Current Printer Status</h4>
+                        <p>View current printer configuration and status</p>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Current Default Printer:</span>
+                                <span class="info-value" id="currentDefaultPrinter">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Available Printers:</span>
+                                <span class="info-value" id="availablePrintersCount">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Printer Status:</span>
+                                <span class="info-value" id="printerStatus">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Last Test:</span>
+                                <span class="info-value" id="lastPrinterTest">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn" onclick="loadPrinterSettings()">🔄 Refresh Status</button>
+                            <button class="btn" onclick="exportPrinterConfig()">📄 Export Config</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" id="cupsAutoConfigSection">
+                        <h4>🧰 Auto Configure Printer (Linux/Armbian)</h4>
+                        <p>Automatically create/enable a CUPS printer queue (no terminal commands needed)</p>
+
+                        <div class="form-group">
+                            <label for="cupsAutoPrinterName">CUPS Printer Queue Name</label>
+                            <input type="text" id="cupsAutoPrinterName" value="EPSON_L3150_Series" placeholder="e.g. EPSON_L3150_Series">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cupsDeviceUri">Detected Device (USB/Network URI)</label>
+                            <select id="cupsDeviceUri" class="form-group input" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                                <option value="">Click "Scan Devices"</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cupsModelSearch">Driver Search (leave empty for all drivers)</label>
+                            <input type="text" id="cupsModelSearch" value="" placeholder="e.g. epson, or leave empty">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cupsModel">Driver / Model</label>
+                            <select id="cupsModel" class="form-group input" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                                <option value="">Click "Search Drivers"</option>
+                            </select>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn" onclick="scanCupsDevices()">🔎 Scan Devices</button>
+                            <button class="btn" onclick="searchCupsDrivers()">📦 Search Drivers</button>
+                            <button class="btn" onclick="autoConfigureCupsPrinter()">⚙️ Auto Configure</button>
+                        </div>
+
+                        <div class="info-grid" style="margin-top: 10px;">
+                            <div class="info-item" style="grid-column: 1 / -1;">
+                                <span class="info-label">Auto-config status:</span>
+                                <span class="info-value" id="cupsAutoConfigStatus">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pricing Settings Tab -->
+                <div id="pricing-tab" class="tab-content">
+                    <div class="settings-section">
+                        <h4>💰 Printing Cost Configuration</h4>
+                        <p>Configure pricing for different paper sizes and color modes</p>
+                        
+                        <div class="pricing-grid" style="display: grid; grid-template-columns: (2, 1fr); gap: 30px; margin-bottom: 30px;">
+                            <!-- Short Paper (8.5" x 11") -->
+                            <div class="paper-size-config" style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #e9ecef;">
+                                <h5 style="color: #333; margin-bottom: 20px; text-align: center; font-size: 1.2rem;">📄 Short Paper (8.5" × 11")</h5>
+                                
+                                <div class="form-group">
+                                    <label for="shortGrayscaleCost">Grayscale Cost (₱ per page)</label>
+                                    <input type="number" id="shortGrayscaleCost" min="0" step="0.50" value="3.00" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="shortColoredCost">Colored Cost (₱ per page)</label>
+                                    <input type="number" id="shortColoredCost" min="0" step="0.50" value="5.40" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                                </div>
+                                
+                                <div class="cost-preview" style="background: #e8f2ff; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem; color: #666;">
+                                    <div><strong>Current Rates:</strong></div>
+                                    <div>⚫ Grayscale: ₱<span id="shortGrayscalePreview">3.00</span> per page</div>
+                                    <div>🌈 Colored: ₱<span id="shortColoredPreview">5.40</span> per page</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Long Paper (8.5" x 14") - DISABLED -->
+                            <!-- 
+                            <div class="paper-size-config" style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #e9ecef;">
+                                <h5 style="color: #333; margin-bottom: 20px; text-align: center; font-size: 1.2rem;">📄 Long Paper (8.5" × 14")</h5>
+                                
+                                <div class="form-group">
+                                    <label for="longGrayscaleCost">Grayscale Cost (₱ per page)</label>
+                                    <input type="number" id="longGrayscaleCost" min="0" step="0.50" value="5.00" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="longColoredCost">Colored Cost (₱ per page)</label>
+                                    <input type="number" id="longColoredCost" min="0" step="0.50" value="9.00" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                                </div>
+                                
+                                <div class="cost-preview" style="background: #e8f2ff; padding: 10px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem; color: #666;">
+                                    <div><strong>Current Rates:</strong></div>
+                                    <div>⚫ Grayscale: ₱<span id="longGrayscalePreview">5.00</span> per page</div>
+                                    <div>🌈 Colored: ₱<span id="longColoredPreview">9.00</span> per page</div>
+                                </div>
+                            </div>
+                            -->
+                        </div>
+                        
+                        <!-- Pricing Summary -->
+                        <div class="pricing-summary" style="background: #f0f8ff; padding: 20px; border-radius: 12px; border: 1px solid #d1ecf1; margin-bottom: 30px;">
+                            <h5 style="color: #333; margin-bottom: 15px; text-align: center;">📊 Pricing Summary</h5>
+                            <div class="summary-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; text-align: center;">
+                                <div class="summary-item" style="background: white; padding: 15px; border-radius: 8px;">
+                                    <div style="font-weight: 600; color: #667eea; margin-bottom: 5px;">Short + Grayscale</div>
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: #333;">₱<span id="summaryShortGray">3.00</span></div>
+                                </div>
+                                <div class="summary-item" style="background: white; padding: 15px; border-radius: 8px;">
+                                    <div style="font-weight: 600; color: #667eea; margin-bottom: 5px;">Short + Colored</div>
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: #333;">₱<span id="summaryShortColor">5.40</span></div>
+                                </div>
+                                <!-- <div class="summary-item" style="background: white; padding: 15px; border-radius: 8px;">
+                                    <div style="font-weight: 600; color: #667eea; margin-bottom: 5px;">Long + Grayscale</div>
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: #333;">₱<span id="summaryLongGray">5.00</span></div>
+                                </div>
+                                <div class="summary-item" style="background: white; padding: 15px; border-radius: 8px;">
+                                    <div style="font-weight: 600; color: #667eea; margin-bottom: 5px;">Long + Colored</div>
+                                    <div style="font-size: 1.2rem; font-weight: 700; color: #333;">₱<span id="summaryLongColor">9.00</span></div>
+                                </div> -->
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn" onclick="savePricingSettings()">💾 Save Pricing Settings</button>
+                            <button class="btn" onclick="loadPricingSettings()">🔄 Refresh Pricing</button>
+                            <!-- <button class="btn" onclick="resetPricingToDefault()">🔄 Reset to Default</button> -->
+                        </div>
+                        
+                        <!-- <div class="form-actions" style="margin-top: 20px; border-top: 1px solid #e9ecef; padding-top: 20px;">
+                            <h5 style="color: #333; margin-bottom: 15px;">🔄 Update Existing Transactions</h5>
+                            <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">Recalculate costs for existing transactions using the new pricing configuration. This will update historical records.</p>
+                            <button class="btn warning" onclick="recalculateTransactionCosts()">🔄 Recalculate All Transaction Costs</button>
+                            <button class="btn" onclick="recalculateTodayTransactions()">📅 Recalculate Today's Transactions Only</button>
+                        </div> -->
+                    </div>
+                    
+                   <div class="settings-section">
+                        <h4>📋 Current Pricing Status</h4>
+                        <p>View current pricing configuration and apply changes</p>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Configuration Status:</span>
+                                <span class="info-value" id="pricingStatus">Loading...</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Last Updated:</span>
+                                <span class="info-value" id="pricingLastUpdated">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Configuration File:</span>
+                                <span class="info-value" id="pricingConfigFile">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Active Since:</span>
+                                <span class="info-value" id="pricingActiveSince">-</span>
+                            </div>
+                        </div>
+<!--                         
+                        <div class="form-actions">
+                            <button class="btn" onclick="testPricingConfiguration()">🧪 Test Configuration</button>
+                            <button class="btn" onclick="exportPricingConfig()">📄 Export Pricing Config</button>
+                            <button class="btn" onclick="importPricingConfig()">📥 Import Pricing Config</button>
+                        </div> -->
+                    </div> 
+                </div>
+                
+                <!-- Security Tab -->
+                <div id="security-tab" class="tab-content">
+                    <div class="settings-section">
+                        <h4>🛡️ Security Settings</h4>
+                        <p>Configure security parameters for admin access</p>
+                        
+                        <div class="form-group">
+                            <label for="sessionTimeout">Session Timeout (hours)</label>
+                            <input type="number" id="sessionTimeout" min="1" max="24" value="8">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="maxLoginAttempts">Maximum Login Attempts</label>
+                            <input type="number" id="maxLoginAttempts" min="3" max="10" value="5">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lockoutDuration">Lockout Duration (minutes)</label>
+                            <input type="number" id="lockoutDuration" min="5" max="60" value="15">
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn" onclick="updateSecuritySettings()">💾 Save Security Settings</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Tab -->
+                <div id="system-tab" class="tab-content">
+                    <div class="settings-section">
+                        <h4>⚙️ System Information</h4>
+                        <p>View system details and configuration</p>
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Current Username:</span>
+                                <span class="info-value" id="currentUserDisplay">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Database Size:</span>
+                                <span class="info-value" id="dbSizeDisplay">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Server Uptime:</span>
+                                <span class="info-value" id="uptimeDisplay">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Last Login:</span>
+                                <span class="info-value" id="lastLoginDisplay">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn" onclick="refreshSystemInfo()">🔄 Refresh Info</button>
+                            <button class="btn" onclick="exportConfig()">📄 Export Config</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Coin Entry Modal -->
+    <div id="manualCoinModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🪙 Manual Coin Entry</h3>
+                <span class="close" onclick="closeManualCoinModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="success-message"></div>
+                <div class="error-message"></div>
+                
+                <div class="settings-section">
+                    <h4>🪙 Add Coins Manually</h4>
+                    <p>Use this to manually record coins when the Arduino coin selector is not working</p>
+                    
+                    <div class="form-group">
+                        <label for="coinType">Coin Type</label>
+                        <select id="coinType" class="form-group input" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                            <option value="1">₱1 Coin</option>
+                            <option value="5">₱5 Coin</option>
+                            <option value="10">₱10 Coin</option>
+                            <option value="20">₱20 Coin</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="coinCount">Number of Coins</label>
+                        <input type="number" id="coinCount" min="1" max="100" value="1" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="coinDate">Date (leave blank for today)</label>
+                        <input type="date" id="coinDate" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="coinSessionId">Session ID (optional)</label>
+                        <input type="text" id="coinSessionId" placeholder="e.g., session_1234567890" style="width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 1rem; background: white;">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button class="btn" onclick="addManualCoins()">🪙 Add Coins</button>
+                        <button class="btn" onclick="closeManualCoinModal()">❌ Cancel</button>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4>📊 Recent Coin Activity</h4>
+                    <p>View recent coin entries to verify they were recorded correctly</p>
+                    
+                    <div class="form-actions">
+                        <button class="btn" onclick="loadRecentCoins()">🔄 Refresh Recent Coins</button>
+                    </div>
+                    
+                    <div id="recentCoinsList" style="margin-top: 20px; max-height: 300px; overflow-y: auto;">
+                        <div class="loading">Loading recent coins...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Logs Modal - External File -->
+    <div id="tableLogsModalContainer"></div>
+
+    <script>
+        let currentDateFrom = new Date().toISOString().split('T')[0];
+        let currentDateTo = new Date().toISOString().split('T')[0];
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            document.getElementById('dateFrom').value = currentDateFrom;
+            document.getElementById('dateTo').value = currentDateTo;
+        });
+
+        // Authentication functions
+        function checkAuth() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Set username
+            const username = localStorage.getItem('adminUsername') || 'Admin';
+            document.getElementById('adminUsername').textContent = username;
+            
+            // Check user permissions and update UI
+            checkUserPermissions();
+            
+            // Load dashboard data
+            loadDashboardData();
+        }
+        
+        async function checkUserPermissions() {
+            try {
+                const role = localStorage.getItem('adminRole') || 'admin';
+                const permissions = JSON.parse(localStorage.getItem('adminPermissions') || '[]');
+                
+                updateUIForRole(role, permissions);
+            } catch (error) {
+                console.error('Error checking permissions:', error);
+                // Fallback to admin role
+                updateUIForRole('admin', ['dashboard', 'settings', 'refresh']);
+            }
+        }
+        
+        function updateUIForRole(role, permissions) {
+            // Show/hide superadmin-only elements
+            const superadminElements = document.querySelectorAll('.superadmin-only');
+            superadminElements.forEach(element => {
+                if (role === 'superadmin' || permissions.includes('all')) {
+                    element.classList.add('show');
+                } else {
+                    element.classList.remove('show');
+                }
+            });
+            
+            // Update header to show role
+            const usernameElement = document.getElementById('adminUsername');
+            if (role === 'superadmin') {
+                usernameElement.textContent = `${localStorage.getItem('adminUsername')} (Superadmin)`;
+            } else {
+                usernameElement.textContent = `${localStorage.getItem('adminUsername')} (Admin)`;
+            }
+        }
+
+        function getAuthHeaders() {
+            const token = localStorage.getItem('adminToken');
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUsername');
+            localStorage.removeItem('adminRole');
+            localStorage.removeItem('adminPermissions');
+            window.location.href = '/login.html';
+        }
+
+        document.getElementById('dateFrom').addEventListener('change', function(e) {
+            currentDateFrom = e.target.value;
+            loadDashboardData();
+        });
+
+        document.getElementById('dateTo').addEventListener('change', function(e) {
+            currentDateTo = e.target.value;
+            loadDashboardData();
+        });
+
+        async function loadDashboardData() {
+            try {
+                await Promise.all([
+                    loadTodaySummary(),
+                    loadCoinBreakdown(),
+                    loadAnomalyScore()
+                ]);
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        async function loadTodaySummary() {
+            try {
+                // Get coin breakdown data to calculate correct totals
+                const coinResponse = await fetch(`/api/admin/daily-coins?dateFrom=${currentDateFrom}&dateTo=${currentDateTo}`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (coinResponse.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const coinData = await coinResponse.json();
+                
+                // Get transaction count from print transactions
+                const transactionResponse = await fetch(`/api/admin/table-logs?dateFrom=${currentDateFrom}&dateTo=${currentDateTo}`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (transactionResponse.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const transactionData = await transactionResponse.json();
+                
+                if (coinData.success) {
+                    const coins = coinData.coins;
+                    
+                    // Calculate totals from coin data for coin count
+                    let totalCoins = 0;
+                    
+                    coins.forEach(coin => {
+                        totalCoins += coin.count || 0;
+                    });
+                    
+                    // Calculate revenue from actual transaction payments (more accurate than coin data)
+                    const totalRevenue = transactionData.success ? 
+                        transactionData.logs.reduce((sum, log) => sum + (log.coins_used || 0), 0) : 0;
+                    
+                    // Get transaction count from table logs
+                    const transactionCount = transactionData.success ? transactionData.logs.length : 0;
+                    
+                    const html = `
+                        <div class="metric">
+                            <div class="metric-value">₱${totalRevenue}</div>
+                            <div class="metric-label">Total Revenue</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${totalCoins}</div>
+                            <div class="metric-label">Total Coins</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${transactionCount}</div>
+                            <div class="metric-label">Transactions</div>
+                        </div>
+                    `;
+                    document.getElementById('todaySummary').innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error loading summary:', error);
+                document.getElementById('todaySummary').innerHTML = '<div class="error">Failed to load data</div>';
+            }
+        }
+
+        async function loadCoinBreakdown() {
+            try {
+                console.log('🪙 Loading coin breakdown for dates:', currentDateFrom, 'to', currentDateTo, '-', new Date().toLocaleTimeString());
+                const response = await fetch(`/api/admin/daily-coins?dateFrom=${currentDateFrom}&dateTo=${currentDateTo}`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                console.log('Coin breakdown API response:', data);
+                
+                if (data.success) {
+                    const coins = data.coins;
+                    console.log('Processing coins:', coins);
+                    
+                    // Debug: Log each coin type count
+                    // Handle both string and number coin types for robustness
+                    const coin1Count = coins.find(c => c.coin_type === '1' || c.coin_type === 1)?.count || 0;
+                    const coin5Count = coins.find(c => c.coin_type === '5' || c.coin_type === 5)?.count || 0;
+                    const coin10Count = coins.find(c => c.coin_type === '10' || c.coin_type === 10)?.count || 0;
+                    const coin20Count = coins.find(c => c.coin_type === '20' || c.coin_type === 20)?.count || 0;
+                    
+                    console.log('Coin counts - ₱1:', coin1Count, '₱5:', coin5Count, '₱10:', coin10Count, '₱20:', coin20Count);
+                    console.log('Coin types in data:', coins.map(c => ({ type: c.coin_type, typeOf: typeof c.coin_type, count: c.count })));
+                    
+                    const html = `
+                        <div class="coin-breakdown">
+                            <div class="coin-item">
+                                <div class="coin-value">₱1</div>
+                                <div class="coin-count">${coin1Count} coins</div>
+                            </div>
+                            <div class="coin-item">
+                                <div class="coin-value">₱5</div>
+                                <div class="coin-count">${coin5Count} coins</div>
+                            </div>
+                            <div class="coin-item">
+                                <div class="coin-value">₱10</div>
+                                <div class="coin-count">${coin10Count} coins</div>
+                            </div>
+                            <div class="coin-item">
+                                <div class="coin-value">₱20</div>
+                                <div class="coin-count">${coin20Count} coins</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 10px; font-size: 0.7rem; color: #666;">
+                            Last updated: ${new Date().toLocaleTimeString()}
+                        </div>
+                    `;
+                    console.log('Setting coin breakdown HTML:', html);
+                    document.getElementById('coinBreakdown').innerHTML = html;
+                } else {
+                    console.error('Coin breakdown API failed:', data.error);
+                    document.getElementById('coinBreakdown').innerHTML = '<div class="error">Failed to load coin data</div>';
+                }
+            } catch (error) {
+                console.error('Error loading coin breakdown:', error);
+                document.getElementById('coinBreakdown').innerHTML = '<div class="error">Failed to load data</div>';
+            }
+        }
+
+        async function loadAnomalyScore() {
+            try {
+                const response = await fetch(`/api/admin/anomaly-score?dateFrom=${currentDateFrom}&dateTo=${currentDateTo}`, {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const score = data.anomaly_score || 0;
+                    let statusClass = 'status-normal';
+                    let statusText = 'Normal';
+                    
+                    if (score > 70) {
+                        statusClass = 'status-danger';
+                        statusText = 'High Risk';
+                    } else if (score > 40) {
+                        statusClass = 'status-warning';
+                        statusText = 'Warning';
+                    }
+                    
+                    const html = `
+                        <div class="metric">
+                            <div class="metric-value">${score.toFixed(1)}</div>
+                            <div class="metric-label">Anomaly Score</div>
+                        </div>
+                    `;
+                    document.getElementById('anomalyScore').innerHTML = html;
+                }
+            } catch (error) {
+                document.getElementById('anomalyScore').innerHTML = '<div class="error">Failed to load data</div>';
+            }
+        }
+
+        function refreshData() {
+            console.log('🔄 Auto-refreshing dashboard data...', new Date().toLocaleTimeString());
+            loadDashboardData();
+        }
+
+        function exportData() {
+            alert('Export functionality coming soon!');
+        }
+
+        function checkAnomalies() {
+            alert('Anomaly check functionality coming soon!');
+        }
+        
+        async function syncData() {
+            if (!confirm('This will recalculate daily summaries from coin data to ensure accuracy. Continue?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/sync-data', {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ ${data.message}`);
+                    // Refresh the dashboard data after sync
+                    loadDashboardData();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error syncing data:', error);
+                alert('❌ Error syncing data: ' + error.message);
+            }
+        }
+        
+        // Cleanup functions
+        function showCleanupOptions() {
+            document.getElementById('cleanupModal').style.display = 'block';
+            loadCleanupStats();
+        }
+        
+        function closeCleanupModal() {
+            document.getElementById('cleanupModal').style.display = 'none';
+        }
+        
+        async function loadCleanupStats() {
+            try {
+                const response = await fetch('/api/admin/database-stats', {
+                    headers: getAuthHeaders()
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('statCoins').textContent = data.stats.dailyCoins;
+                    document.getElementById('statSummaries').textContent = data.stats.dailySummaries;
+                    document.getElementById('statTransactions').textContent = data.stats.printTransactions;
+                    document.getElementById('statAnomalies').textContent = data.stats.anomalies;
+                }
+            } catch (error) {
+                console.error('Error loading cleanup stats:', error);
+            }
+        }
+        
+        async function cleanupData(type) {
+            if (!confirm(`Are you sure you want to ${type === 'all' ? 'clear all data' : `clear ${type} data`}? This action cannot be undone!`)) {
+                return;
+            }
+            
+            try {
+                let url = '/api/admin/cleanup';
+                let body = { type: type };
+                
+                if (type === 'old') {
+                    const days = document.getElementById('daysOld').value;
+                    body.days = parseInt(days);
+                }
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(body)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ ${data.message}`);
+                    loadCleanupStats();
+                    loadDashboardData();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error during cleanup:', error);
+                alert('❌ Error during cleanup: ' + error.message);
+            }
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('cleanupModal');
+            if (event.target === modal) {
+                closeCleanupModal();
+            }
+        }
+
+        // Auto-refresh every 30 seconds for testing (was 5 minutes)
+        setInterval(refreshData, 30 * 1000);
+        console.log('🔄 Auto-refresh enabled: every 30 seconds');
+        
+        // Settings functions
+        function showSettings() {
+            document.getElementById('settingsModal').style.display = 'block';
+            loadSystemInfo();
+            loadPrinterSettings(); // Load printer settings when modal opens
+            loadPricingSettings(); // Load pricing settings when modal opens
+            
+            // Set current username in credentials form
+            const currentUsername = localStorage.getItem('adminUsername') || 'Admin';
+            document.getElementById('currentUsername').value = currentUsername;
+        }
+        
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+        
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Load specific data when switching to certain tabs
+            if (tabName === 'pricing') {
+                loadPricingSettings();
+            } else if (tabName === 'printer') {
+                loadPrinterSettings();
+            }
+        }
+        
+        async function updateCredentials(event) {
+            event.preventDefault();
+            
+            const currentUsername = document.getElementById('currentUsername').value;
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Validate passwords match
+            if (newPassword !== confirmPassword) {
+                showMessage('Passwords do not match!', 'error');
+                return;
+            }
+            
+            // Validate password strength
+            if (newPassword.length < 6) {
+                showMessage('Password must be at least 6 characters long!', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/update-credentials', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        currentUsername,
+                        currentPassword,
+                        newUsername: currentUsername, // Keep same username
+                        newPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Password updated successfully! Please login again.', 'success');
+                    
+                    // Clear form
+                    resetCredentialsForm();
+                    
+                    // Logout after 3 seconds
+                    setTimeout(() => {
+                        logout();
+                    }, 3000);
+                } else {
+                    showMessage(data.error || 'Failed to update password', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating password:', error);
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+        
+        function resetCredentialsForm() {
+            document.getElementById('credentialsForm').reset();
+            
+            // Restore current username after reset
+            const currentUsername = localStorage.getItem('adminUsername') || 'Admin';
+            document.getElementById('currentUsername').value = currentUsername;
+        }
+        
+        async function updateSecuritySettings() {
+            const sessionTimeout = document.getElementById('sessionTimeout').value;
+            const maxLoginAttempts = document.getElementById('maxLoginAttempts').value;
+            const lockoutDuration = document.getElementById('lockoutDuration').value;
+            
+            try {
+                const response = await fetch('/api/admin/update-security', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        sessionTimeout: parseInt(sessionTimeout),
+                        maxLoginAttempts: parseInt(maxLoginAttempts),
+                        lockoutDuration: parseInt(lockoutDuration)
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Security settings updated successfully!', 'success');
+                } else {
+                    showMessage(data.error || 'Failed to update security settings', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating security settings:', error);
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+        
+        async function loadSystemInfo() {
+            try {
+                const response = await fetch('/api/admin/system-info', {
+                    headers: getAuthHeaders()
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('currentUserDisplay').textContent = data.info.currentUsername;
+                    document.getElementById('dbSizeDisplay').textContent = data.info.dbSize;
+                    document.getElementById('uptimeDisplay').textContent = data.info.uptime;
+                    document.getElementById('lastLoginDisplay').textContent = data.info.lastLogin;
+                }
+            } catch (error) {
+                console.error('Error loading system info:', error);
+            }
+        }
+        
+        function refreshSystemInfo() {
+            loadSystemInfo();
+        }
+        
+        function exportConfig() {
+            // Create config object
+            const config = {
+                currentUsername: document.getElementById('currentUserDisplay').textContent,
+                sessionTimeout: document.getElementById('sessionTimeout').value,
+                maxLoginAttempts: document.getElementById('maxLoginAttempts').value,
+                lockoutDuration: document.getElementById('lockoutDuration').value,
+                exportDate: new Date().toISOString()
+            };
+            
+            // Create and download file
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'piso-printer-config.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage('Configuration exported successfully!', 'success');
+        }
+        
+        function showMessage(message, type) {
+            const successMsg = document.querySelector('.success-message');
+            const errorMsg = document.querySelector('.error-message');
+            
+            // Hide both messages
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            
+            // Show appropriate message
+            if (type === 'success') {
+                successMsg.textContent = message;
+                successMsg.style.display = 'block';
+            } else {
+                errorMsg.textContent = message;
+                errorMsg.style.display = 'block';
+            }
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+                errorMsg.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Printer Settings Functions
+        async function loadPrinterSettings() {
+            try {
+                const response = await fetch('/api/printer-config', {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const config = data.config;
+                    
+                    // Update form fields
+                    document.getElementById('defaultPaperSize').value = config.DEFAULTS?.paperSize || 'short';
+                    document.getElementById('defaultColorMode').value = config.DEFAULTS?.colorMode || 'grayscale';
+                    document.getElementById('defaultPrintQuality').value = config.DEFAULT_PRINT_QUALITY || 'normal';
+                    
+                    // Update status display
+                    document.getElementById('currentDefaultPrinter').textContent = config.DEFAULT_PRINTER || 'Not set';
+                    document.getElementById('availablePrintersCount').textContent = '...';
+                    document.getElementById('printerStatus').textContent = 'Loading printers...';
+                    
+                    // Load printer list
+                    await loadPrinterList(config.DEFAULT_PRINTER || '');
+                    const defaultSelect = document.getElementById('defaultPrinter');
+                    const desiredDefault = (config.DEFAULT_PRINTER || '').trim();
+                    if (defaultSelect && desiredDefault) {
+                        const hasDesired = Array.from(defaultSelect.options).some(o => o && o.value === desiredDefault);
+                        if (hasDesired) {
+                            defaultSelect.value = desiredDefault;
+                        }
+                    }
+                    const effectiveDefault = defaultSelect ? defaultSelect.value : '';
+                    document.getElementById('currentDefaultPrinter').textContent = effectiveDefault || config.DEFAULT_PRINTER || 'Not set';
+                }
+            } catch (error) {
+                console.error('Error loading printer settings:', error);
+                showMessage('Failed to load printer settings', 'error');
+            }
+        }
+        
+        async function loadPrinterList(selectedPrinterName = '') {
+            try {
+                const response = await fetch('/api/printers', {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                const printerSelect = document.getElementById('defaultPrinter');
+                printerSelect.innerHTML = '';
+
+                if (!data.success) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'Failed to load printers';
+                    printerSelect.appendChild(option);
+                    document.getElementById('availablePrintersCount').textContent = 0;
+                    document.getElementById('printerStatus').textContent = data.error || 'Failed to load printers';
+                    showMessage(data.error || 'Failed to load printers', 'error');
+                    return;
+                }
+
+                if (data.printers && data.printers.length > 0) {
+                    window.__lastPrintersList = data.printers;
+                    document.getElementById('availablePrintersCount').textContent = data.printers.length;
+                    data.printers.forEach(printer => {
+                        const option = document.createElement('option');
+                        option.value = printer.Name;
+                        option.textContent = printer.Name;
+                        printerSelect.appendChild(option);
+                    });
+
+                    if (selectedPrinterName) {
+                        const hasSelected = Array.from(printerSelect.options).some(opt => opt.value === selectedPrinterName);
+                        if (hasSelected) {
+                            printerSelect.value = selectedPrinterName;
+                        }
+                    }
+
+                    updatePrinterStatusDisplay(printerSelect.value);
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No printers found';
+                    printerSelect.appendChild(option);
+                    window.__lastPrintersList = [];
+                    document.getElementById('availablePrintersCount').textContent = 0;
+                    document.getElementById('printerStatus').textContent = 'No CUPS printer queues found (lpstat -p). Your printer may be connected (lpinfo -v), but you still need to create a queue via Auto Configure below.';
+                }
+
+                if (!printerSelect.dataset.listenerAdded) {
+                    printerSelect.addEventListener('change', () => {
+                        updatePrinterStatusDisplay(printerSelect.value);
+                    });
+                    printerSelect.dataset.listenerAdded = '1';
+                }
+            } catch (error) {
+                console.error('Error loading printer list:', error);
+                showMessage('Failed to load printer list', 'error');
+            }
+        }
+
+        function updatePrinterStatusDisplay(printerName) {
+            const printers = window.__lastPrintersList || [];
+            const printer = printers.find(p => p && p.Name === printerName);
+            const statusEl = document.getElementById('printerStatus');
+            if (!statusEl) return;
+
+            if (!printer) {
+                statusEl.textContent = printerName ? 'Unknown' : '-';
+                return;
+            }
+
+            let text = printer.PrinterStatus || 'Unknown';
+            if (printer.StatusDetails) {
+                text += ` - ${printer.StatusDetails}`;
+            }
+            if (printer.DeviceUri) {
+                text += ` (${printer.DeviceUri})`;
+            }
+            statusEl.textContent = text;
+        }
+        
+        async function savePrinterSettings() {
+            try {
+                const defaultPrinter = document.getElementById('defaultPrinter').value;
+                const defaultPaperSize = document.getElementById('defaultPaperSize').value;
+                const defaultColorMode = document.getElementById('defaultColorMode').value;
+                const defaultPrintQuality = document.getElementById('defaultPrintQuality').value;
+                
+                if (!defaultPrinter) {
+                    showMessage('Please select a default printer', 'error');
+                    return;
+                }
+                
+                const updates = {
+                    DEFAULT_PRINTER: defaultPrinter,
+                    DEFAULTS: {
+                        paperSize: defaultPaperSize,
+                        colorMode: defaultColorMode,
+                        printerName: defaultPrinter
+                    },
+                    DEFAULT_PRINT_QUALITY: defaultPrintQuality
+                };
+                
+                const response = await fetch('/api/printer-config', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ updates })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('Printer settings saved successfully!', 'success');
+                    loadPrinterSettings(); // Refresh the display
+                } else {
+                    showMessage(data.error || 'Failed to save printer settings', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving printer settings:', error);
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+        
+        
+        async function refreshPrinterList() {
+            try {
+                showMessage('Refreshing printer list...', 'success');
+                
+                const response = await fetch('/api/printer-refresh', {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.printers.length === 0) {
+                        showMessage('Found 0 CUPS printer queues. Use Scan Devices + Search Drivers + Auto Configure to create a queue from the USB device.', 'error');
+                    } else {
+                        showMessage(`Found ${data.printers.length} printers`, 'success');
+                    }
+                    await loadPrinterList();
+                    loadPrinterSettings(); // Refresh the entire settings
+                } else {
+                    showMessage(data.error || 'Failed to refresh printer list', 'error');
+                }
+            } catch (error) {
+                console.error('Error refreshing printer list:', error);
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        async function scanCupsDevices() {
+            const section = document.getElementById('cupsAutoConfigSection');
+            const statusEl = document.getElementById('cupsAutoConfigStatus');
+            const select = document.getElementById('cupsDeviceUri');
+
+            if (section) section.style.display = 'block';
+            if (statusEl) statusEl.textContent = 'Scanning devices...';
+
+            try {
+                const response = await fetch('/api/cups/devices', { headers: getAuthHeaders() });
+
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+
+                const data = await response.json();
+                if (!data.success) {
+                    if (statusEl) statusEl.textContent = data.error || 'Failed to scan devices';
+                    if (data.needsSudo) {
+                        showMessage('CUPS scan needs sudo (NOPASSWD). Please configure sudoers for lpinfo/lpadmin.', 'error');
+                    }
+                    return;
+                }
+
+                if (select) {
+                    select.innerHTML = '';
+                    const devices = data.devices || [];
+                    const usbFirst = devices.slice().sort((a, b) => {
+                        const au = (a.uri || '').toLowerCase().startsWith('usb://') ? 0 : 1;
+                        const bu = (b.uri || '').toLowerCase().startsWith('usb://') ? 0 : 1;
+                        return au - bu;
+                    });
+
+                    if (usbFirst.length === 0) {
+                        const opt = document.createElement('option');
+                        opt.value = '';
+                        opt.textContent = 'No devices found';
+                        select.appendChild(opt);
+                    } else {
+                        for (const d of usbFirst) {
+                            const opt = document.createElement('option');
+                            opt.value = d.uri;
+                            opt.textContent = `${d.class}: ${d.uri}`;
+                            select.appendChild(opt);
+                        }
+                    }
+
+                    if (statusEl) {
+                        if (usbFirst.length === 0) {
+                            statusEl.textContent = 'Found 0 device(s). Make sure the printer is powered on and connected. If still 0, CUPS/usb backend may not be installed or accessible.';
+                        } else {
+                            statusEl.textContent = `Found ${usbFirst.length} device(s)`;
+                        }
+                    }
+                }
+            } catch (e) {
+                if (statusEl) statusEl.textContent = e.message || 'Scan failed';
+            }
+        }
+
+        async function searchCupsDrivers() {
+            const section = document.getElementById('cupsAutoConfigSection');
+            const statusEl = document.getElementById('cupsAutoConfigStatus');
+            const select = document.getElementById('cupsModel');
+            let q = (document.getElementById('cupsModelSearch')?.value || '').trim();
+
+            if (!q) {
+                const uri = (document.getElementById('cupsDeviceUri')?.value || '').trim();
+                if (uri) {
+                    try {
+                        const base = uri.split('?')[0];
+                        const decoded = decodeURIComponent(base);
+                        const parts = decoded.split('/');
+                        const modelPart = (parts[parts.length - 1] || '').trim();
+                        const m = modelPart.match(/[A-Za-z]*\d{3,5}/);
+                        if (m && m[0]) {
+                            q = m[0];
+                            const searchEl = document.getElementById('cupsModelSearch');
+                            if (searchEl) searchEl.value = q;
+                        }
+                    } catch (_) {}
+                }
+            }
+
+            if (section) section.style.display = 'block';
+            if (statusEl) statusEl.textContent = 'Searching drivers...';
+
+            try {
+                const response = await fetch(`/api/cups/models?q=${encodeURIComponent(q)}`, { headers: getAuthHeaders() });
+
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+
+                const data = await response.json();
+                if (!data.success) {
+                    if (statusEl) statusEl.textContent = data.error || 'Failed to load drivers';
+                    if (data.needsSudo) {
+                        showMessage('CUPS driver list needs sudo (NOPASSWD). Please configure sudoers for lpinfo.', 'error');
+                    }
+                    return;
+                }
+
+                if (select) {
+                    select.innerHTML = '';
+                    const models = data.models || [];
+                    if (models.length === 0) {
+                        const opt = document.createElement('option');
+                        opt.value = '';
+                        opt.textContent = 'No matching drivers found';
+                        select.appendChild(opt);
+                        if (statusEl) statusEl.textContent = 'No matching drivers found';
+                        return;
+                    }
+
+                    for (const m of models.slice(0, 100)) {
+                        const opt = document.createElement('option');
+                        opt.value = m.model;
+                        opt.textContent = `${m.description}`;
+                        select.appendChild(opt);
+                    }
+
+                    let preferred = '';
+                    const qLower = (q || '').toLowerCase();
+                    if (qLower) {
+                        const best = models.find(m => {
+                            const mm = (m && m.model) ? String(m.model).toLowerCase() : '';
+                            const dd = (m && m.description) ? String(m.description).toLowerCase() : '';
+                            return mm.includes(qLower) || dd.includes(qLower);
+                        });
+                        if (best && best.model) preferred = String(best.model);
+                    }
+
+                    if (!preferred) {
+                        const firstNonBuiltin = models.find(m => m && m.model && m.model !== 'everywhere' && m.model !== 'raw');
+                        if (firstNonBuiltin && firstNonBuiltin.model) preferred = String(firstNonBuiltin.model);
+                    }
+
+                    if (!preferred) {
+                        const first = (models[0] && models[0].model) ? String(models[0].model) : '';
+                        if (first) preferred = first;
+                    }
+
+                    if (preferred) {
+                        select.value = preferred;
+                    }
+
+                    if (statusEl) statusEl.textContent = `Found ${models.length} driver(s)`;
+                }
+            } catch (e) {
+                if (statusEl) statusEl.textContent = e.message || 'Search failed';
+            }
+        }
+
+        async function autoConfigureCupsPrinter() {
+            const section = document.getElementById('cupsAutoConfigSection');
+            const statusEl = document.getElementById('cupsAutoConfigStatus');
+            const printerName = (document.getElementById('cupsAutoPrinterName')?.value || '').trim();
+            const deviceUri = (document.getElementById('cupsDeviceUri')?.value || '').trim();
+            const model = (document.getElementById('cupsModel')?.value || '').trim();
+
+            if (!printerName || !deviceUri || !model) {
+                if (!printerName) {
+                    showMessage('CUPS printer queue name is required', 'error');
+                } else if (!deviceUri) {
+                    showMessage('Please click "Scan Devices" and select a device URI', 'error');
+                } else {
+                    showMessage('Please click "Search Drivers" and select a driver/model', 'error');
+                }
+                return;
+            }
+
+            if (section) section.style.display = 'block';
+            if (statusEl) statusEl.textContent = 'Configuring printer via CUPS...';
+
+            try {
+                const response = await fetch('/api/cups/auto-configure', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ printerName, deviceUri, model, setDefault: true })
+                });
+
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+
+                const data = await response.json();
+                if (!data.success) {
+                    if (statusEl) statusEl.textContent = data.error || 'Auto-config failed';
+                    if (data.needsSudo) {
+                        showMessage('Auto-config needs sudo (NOPASSWD). Please configure sudoers for lpadmin/cupsenable/cupsaccept/lpinfo.', 'error');
+                    } else {
+                        showMessage(data.error || 'Auto-config failed', 'error');
+                    }
+                    return;
+                }
+
+                if (statusEl) statusEl.textContent = `Configured: ${data.printerName}`;
+                showMessage(`CUPS printer configured: ${data.printerName}`, 'success');
+
+                await refreshPrinterList();
+                await loadPrinterSettings();
+
+                const defaultSelect = document.getElementById('defaultPrinter');
+                if (defaultSelect) {
+                    const has = Array.from(defaultSelect.options).some(o => o.value === data.printerName);
+                    if (has) defaultSelect.value = data.printerName;
+                }
+            } catch (e) {
+                if (statusEl) statusEl.textContent = e.message || 'Auto-config failed';
+                showMessage(e.message || 'Auto-config failed', 'error');
+            }
+        }
+        
+        async function exportPrinterConfig() {
+            try {
+                const response = await fetch('/api/printer-config', {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const config = data.config;
+                    const exportData = {
+                        defaultPrinter: config.DEFAULT_PRINTER,
+                        defaults: config.DEFAULTS,
+                        printQuality: config.DEFAULT_PRINT_QUALITY,
+                        availablePrinters: config.AVAILABLE_PRINTERS,
+                        exportDate: new Date().toISOString()
+                    };
+                    
+                    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'printer-config.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    showMessage('Printer configuration exported successfully!', 'success');
+                } else {
+                    showMessage('Failed to export printer configuration', 'error');
+                }
+            } catch (error) {
+                console.error('Error exporting printer config:', error);
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+        
+        
+        // Close settings modal when clicking outside
+        window.onclick = function(event) {
+            const cleanupModal = document.getElementById('cleanupModal');
+            const settingsModal = document.getElementById('settingsModal');
+            const manualCoinModal = document.getElementById('manualCoinModal');
+            const tableLogsModal = document.getElementById('tableLogsModal');
+            
+            if (event.target === cleanupModal) {
+                closeCleanupModal();
+            }
+            
+            if (event.target === settingsModal) {
+                closeSettingsModal();
+            }
+            
+            if (event.target === manualCoinModal) {
+                closeManualCoinModal();
+            }
+            
+            if (event.target === tableLogsModal) {
+                closeTableLogsModal();
+            }
+        }
+
+        // Pricing Settings Functions
+        async function savePricingSettings() {
+            try {
+                const shortGrayscaleCost = parseFloat(document.getElementById('shortGrayscaleCost').value);
+                const shortColoredCost = parseFloat(document.getElementById('shortColoredCost').value);
+                
+                // Validate inputs (only short paper - long paper is disabled)
+                if (isNaN(shortGrayscaleCost) || isNaN(shortColoredCost)) {
+                    showMessage('Please enter valid pricing values', 'error');
+                    return;
+                }
+                
+                if (shortGrayscaleCost < 0 || shortColoredCost < 0) {
+                    showMessage('Pricing values cannot be negative', 'error');
+                    return;
+                }
+                
+                const pricingConfig = {
+                    shortPaper: {
+                        grayscale: shortGrayscaleCost,
+                        colored: shortColoredCost
+                    },
+                    longPaper: {
+                        grayscale: 5.00,
+                        colored: 9.00
+                    },
+                    lastUpdated: new Date().toISOString()
+                };
+                
+                const response = await fetch('/api/admin/pricing-config', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(pricingConfig)
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                if (response.ok) {
+                    showMessage('Pricing settings saved successfully! Note: Existing transaction records will keep their original costs. Use "Recalculate Transaction Costs" to update historical records.', 'success');
+                    updatePricingPreviews();
+                    loadPricingSettings(); // Refresh the status
+                    
+                    // Notify main interface to reload pricing (if it's open)
+                    if (window.opener && !window.opener.closed) {
+                        try {
+                            window.opener.postMessage({ type: 'PRICING_UPDATED' }, '*');
+                        } catch (e) {
+                            // Ignore cross-origin errors
+                        }
+                    }
+                } else {
+                    const error = await response.text();
+                    showMessage(`Failed to save pricing settings: ${error}`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error saving pricing settings:', error);
+                showMessage('Error saving pricing settings', 'error');
+            }
+        }
+
+        async function loadPricingSettings() {
+            try {
+                const response = await fetch('/api/admin/pricing-config', {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                if (response.ok) {
+                    const config = await response.json();
+                    
+                    if (config.success && config.data) {
+                        const pricing = config.data;
+                        
+                        // Update form inputs (only short paper - long paper is disabled)
+                        document.getElementById('shortGrayscaleCost').value = pricing.shortPaper?.grayscale || 3.00;
+                        document.getElementById('shortColoredCost').value = pricing.shortPaper?.colored || 5.40;
+                        
+                        // Long paper fields are commented out, so skip updating them
+                        // document.getElementById('longGrayscaleCost').value = pricing.longPaper?.grayscale || 5.00;
+                        // document.getElementById('longColoredCost').value = pricing.longPaper?.colored || 9.00;
+                        
+                        // Update status info
+                        document.getElementById('pricingStatus').textContent = 'Active';
+                        document.getElementById('pricingLastUpdated').textContent = pricing.lastUpdated ? 
+                            new Date(pricing.lastUpdated).toLocaleString() : 'Never';
+                        document.getElementById('pricingConfigFile').textContent = 'pricing-config.json';
+                        document.getElementById('pricingActiveSince').textContent = pricing.lastUpdated ? 
+                            new Date(pricing.lastUpdated).toLocaleString() : 'Default values';
+                        
+                        updatePricingPreviews();
+                    } else {
+                        // Load default values
+                        loadDefaultPricing();
+                    }
+                } else {
+                    // Load default values if server doesn't have config
+                    loadDefaultPricing();
+                }
+                
+            } catch (error) {
+                console.error('Error loading pricing settings:', error);
+                loadDefaultPricing();
+            }
+        }
+
+        function loadDefaultPricing() {
+            // Set default values (only short paper - long paper is disabled)
+            document.getElementById('shortGrayscaleCost').value = 3.00;
+            document.getElementById('shortColoredCost').value = 5.40;
+            
+            // Long paper fields are commented out, so skip updating them
+            // document.getElementById('longGrayscaleCost').value = 5.00;
+            // document.getElementById('longColoredCost').value = 9.00;
+            
+            // Update status
+            document.getElementById('pricingStatus').textContent = 'Using Default Values';
+            document.getElementById('pricingLastUpdated').textContent = 'Never';
+            document.getElementById('pricingConfigFile').textContent = 'Default';
+            document.getElementById('pricingActiveSince').textContent = 'System Default';
+            
+            updatePricingPreviews();
+        }
+
+        function updatePricingPreviews() {
+            const shortGray = document.getElementById('shortGrayscaleCost').value;
+            const shortColor = document.getElementById('shortColoredCost').value;
+            
+            // Update preview boxes (only short paper - long paper is disabled)
+            document.getElementById('shortGrayscalePreview').textContent = shortGray;
+            document.getElementById('shortColoredPreview').textContent = shortColor;
+            
+            // Long paper preview elements are commented out, so skip updating them
+            // const longGray = document.getElementById('longGrayscaleCost').value;
+            // const longColor = document.getElementById('longColoredCost').value;
+            // document.getElementById('longGrayscalePreview').textContent = longGray;
+            // document.getElementById('longColoredPreview').textContent = longColor;
+            
+            // Update summary (only short paper)
+            document.getElementById('summaryShortGray').textContent = shortGray;
+            document.getElementById('summaryShortColor').textContent = shortColor;
+            
+            // Long paper summary elements are commented out, so skip updating them
+            // document.getElementById('summaryLongGray').textContent = longGray;
+            // document.getElementById('summaryLongColor').textContent = longColor;
+        }
+
+        function resetPricingToDefault() {
+            if (confirm('Are you sure you want to reset pricing to default values?')) {
+                loadDefaultPricing();
+                showMessage('Pricing reset to default values', 'success');
+            }
+        }
+
+        async function testPricingConfiguration() {
+            try {
+                const shortGray = parseFloat(document.getElementById('shortGrayscaleCost').value);
+                const shortColor = parseFloat(document.getElementById('shortColoredCost').value);
+                const longGray = parseFloat(document.getElementById('longGrayscaleCost').value);
+                const longColor = parseFloat(document.getElementById('longColoredCost').value);
+                
+                // Test calculation
+                const testPages = 2;
+                const shortGrayTotal = shortGray * testPages;
+                const shortColorTotal = shortColor * testPages;
+                const longGrayTotal = longGray * testPages;
+                const longColorTotal = longColor * testPages;
+                
+                const testResults = `
+                    Pricing Configuration Test Results:
+                    
+                    For ${testPages} pages:
+                    • Short + Grayscale: ₱${shortGrayTotal.toFixed(2)}
+                    • Short + Colored: ₱${shortColorTotal.toFixed(2)}
+                    • Long + Grayscale: ₱${longGrayTotal.toFixed(2)}
+                    • Long + Colored: ₱${longColorTotal.toFixed(2)}
+                    
+                    Configuration appears to be working correctly!
+                `;
+                
+                showMessage(testResults, 'success');
+                
+            } catch (error) {
+                console.error('Error testing pricing configuration:', error);
+                showMessage('Error testing pricing configuration', 'error');
+            }
+        }
+
+        async function exportPricingConfig() {
+            try {
+                const config = {
+                    shortPaper: {
+                        grayscale: parseFloat(document.getElementById('shortGrayscaleCost').value),
+                        colored: parseFloat(document.getElementById('shortColoredCost').value)
+                    },
+                    longPaper: {
+                        grayscale: parseFloat(document.getElementById('longGrayscaleCost').value),
+                        colored: parseFloat(document.getElementById('longColoredCost').value)
+                    },
+                    exportedAt: new Date().toISOString(),
+                    version: '1.0'
+                };
+                
+                const dataStr = JSON.stringify(config, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `pricing-config-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                
+                showMessage('Pricing configuration exported successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error exporting pricing configuration:', error);
+                showMessage('Error exporting pricing configuration', 'error');
+            }
+        }
+
+        function importPricingConfig() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                try {
+                    const text = await file.text();
+                    const config = JSON.parse(text);
+                    
+                    if (config.shortPaper && config.longPaper) {
+                        document.getElementById('shortGrayscaleCost').value = config.shortPaper.grayscale || 3.00;
+                        document.getElementById('shortColoredCost').value = config.shortPaper.colored || 5.40;
+                        document.getElementById('longGrayscaleCost').value = config.longPaper.grayscale || 5.00;
+                        document.getElementById('longColoredCost').value = config.longPaper.colored || 9.00;
+                        
+                        updatePricingPreviews();
+                        showMessage('Pricing configuration imported successfully!', 'success');
+                    } else {
+                        showMessage('Invalid pricing configuration file format', 'error');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error importing pricing configuration:', error);
+                    showMessage('Error importing pricing configuration file', 'error');
+                }
+            };
+            
+            input.click();
+        }
+
+        // Transaction Cost Recalculation Functions
+        async function recalculateTransactionCosts() {
+            if (!confirm('This will recalculate ALL transaction costs using the current pricing configuration. This action cannot be undone. Continue?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/recalculate-transaction-costs', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ scope: 'all' })
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(`✅ Successfully recalculated ${data.updatedCount} transaction costs. Total cost changes: ₱${data.totalCostDifference.toFixed(2)}`, 'success');
+                    
+                    // Refresh the dashboard and table logs if they're open
+                    loadDashboardData();
+                    if (typeof loadTableLogsData === 'function') {
+                        loadTableLogsData();
+                    }
+                } else {
+                    showMessage(data.error || 'Failed to recalculate transaction costs', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error recalculating transaction costs:', error);
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+        
+        async function recalculateTodayTransactions() {
+            if (!confirm('This will recalculate TODAY\'S transaction costs using the current pricing configuration. Continue?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/recalculate-transaction-costs', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ scope: 'today' })
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(`✅ Successfully recalculated ${data.updatedCount} transactions for today. Total cost changes: ₱${data.totalCostDifference.toFixed(2)}`, 'success');
+                    
+                    // Refresh the dashboard and table logs if they're open
+                    loadDashboardData();
+                    if (typeof loadTableLogsData === 'function') {
+                        loadTableLogsData();
+                    }
+                } else {
+                    showMessage(data.error || 'Failed to recalculate today\'s transaction costs', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error recalculating today\'s transaction costs:', error);
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        // Sync Coin Data Function
+        async function syncCoinData() {
+            if (!confirm('This will sync coin records with transaction payments for today. Missing coins will be created and incorrect records will be fixed. Continue?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/sync-coin-data', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ scope: 'today' })
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(`✅ Successfully synced coin data. Created ${data.coinsCreated} missing coins, fixed ${data.coinsFixed} incorrect records. Total value now matches: ₱${data.totalValue}`, 'success');
+                    
+                    // Refresh the dashboard and table logs if they're open
+                    loadDashboardData();
+                    if (typeof loadTableLogsData === 'function') {
+                        loadTableLogsData();
+                    }
+                } else {
+                    showMessage(data.error || 'Failed to sync coin data', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error syncing coin data:', error);
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        // Add event listeners for real-time preview updates
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add input event listeners for real-time preview updates
+            const pricingInputs = [
+                'shortGrayscaleCost', 'shortColoredCost', 
+                'longGrayscaleCost', 'longColoredCost'
+            ];
+            
+            pricingInputs.forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', updatePricingPreviews);
+                    input.addEventListener('change', updatePricingPreviews);
+                }
+            });
+        });
+
+        // Manual Coin Entry Functions
+        function showManualCoinEntry() {
+            document.getElementById('manualCoinModal').style.display = 'block';
+            loadRecentCoins();
+            
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('coinDate').value = today;
+        }
+        
+        function closeManualCoinModal() {
+            document.getElementById('manualCoinModal').style.display = 'none';
+        }
+        
+        async function addManualCoins() {
+            try {
+                const coinType = document.getElementById('coinType').value;
+                const coinCount = parseInt(document.getElementById('coinCount').value);
+                const coinDate = document.getElementById('coinDate').value || new Date().toISOString().split('T')[0];
+                const sessionId = document.getElementById('coinSessionId').value || null;
+                
+                if (!coinType || !coinCount || coinCount < 1) {
+                    showMessage('Please enter valid coin type and count', 'error');
+                    return;
+                }
+                
+                const coinValue = parseInt(coinType);
+                const totalValue = coinValue * coinCount;
+                
+                const response = await fetch('/api/admin/manual-coin-entry', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        coinType,
+                        coinValue,
+                        coinCount,
+                        coinDate,
+                        sessionId
+                    })
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage(`✅ Successfully added ${coinCount} x ₱${coinValue} coins (₱${totalValue} total)`, 'success');
+                    
+                    // Clear form
+                    document.getElementById('coinCount').value = 1;
+                    document.getElementById('coinSessionId').value = '';
+                    
+                    // Refresh recent coins and dashboard
+                    loadRecentCoins();
+                    loadDashboardData();
+                } else {
+                    showMessage(data.error || 'Failed to add coins', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error adding manual coins:', error);
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+        
+        async function loadRecentCoins() {
+            try {
+                const response = await fetch('/api/admin/recent-coins', {
+                    headers: getAuthHeaders()
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const coinsList = document.getElementById('recentCoinsList');
+                    
+                    if (data.coins && data.coins.length > 0) {
+                        const html = data.coins.map(coin => {
+                            const date = new Date(coin.timestamp);
+                            const dateStr = date.toLocaleDateString();
+                            const timeStr = date.toLocaleTimeString();
+                            
+                            return `
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e9ecef;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <div style="font-weight: 600; color: #1e3c72;">₱${coin.coin_value} Coin</div>
+                                            <div style="font-size: 0.8rem; color: #666;">${dateStr} at ${timeStr}</div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-size: 0.8rem; color: #666;">Type: ${coin.coin_type}</div>
+                                            ${coin.session_id ? `<div style="font-size: 0.7rem; color: #999;">Session: ${coin.session_id}</div>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        coinsList.innerHTML = html;
+                    } else {
+                        coinsList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">No recent coin entries found</div>';
+                    }
+                } else {
+                    document.getElementById('recentCoinsList').innerHTML = 
+                        '<div style="text-align: center; color: #dc3545; padding: 20px;">Error loading recent coins</div>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading recent coins:', error);
+                document.getElementById('recentCoinsList').innerHTML = 
+                    '<div style="text-align: center; color: #dc3545; padding: 20px;">Failed to load recent coins</div>';
+            }
+        }
+    </script>
+    
+    <!-- External Scripts -->
+    <script src="table-logs.js"></script>
+    
+    <!-- Load Table Logs Modal -->
+    <script>
+        let tableLogsModalLoaded = false;
+        
+        // Load table logs modal content
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('table-logs-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('tableLogsModalContainer').innerHTML = html;
+                    tableLogsModalLoaded = true;
+                    console.log('Table logs modal loaded successfully');
+                })
+                .catch(error => {
+                    console.error('Error loading table logs modal:', error);
+                });
+        });
+        
+        // Override the showTableLogs function to ensure modal is loaded
+        function showTableLogs() {
+            if (!tableLogsModalLoaded) {
+                console.log('Table logs modal not yet loaded, retrying...');
+                setTimeout(() => {
+                    showTableLogs();
+                }, 500);
+                return;
+            }
+            
+            // Now call the function from table-logs.js
+            const modal = document.getElementById('tableLogsModal');
+            if (!modal) {
+                console.error('Table logs modal not found');
+                return;
+            }
+            
+            modal.style.display = 'block';
+            
+            // Wait for modal content to be ready, then set up and load data
+            setTimeout(() => {
+                // Set default date range
+                const today = new Date().toISOString().split('T')[0];
+                const dateFromInput = document.getElementById('logsDateFrom');
+                const dateToInput = document.getElementById('logsDateTo');
+                
+                if (dateFromInput && dateToInput) {
+                    dateFromInput.value = today;
+                    dateToInput.value = today;
+                    
+                    // Load logs for today - implement directly here
+                    console.log('Loading table logs...');
+                    loadTableLogsData();
+                } else {
+                    console.error('Date inputs not found in modal');
+                    // Retry after a short delay
+                    setTimeout(() => {
+                        const retryDateFrom = document.getElementById('logsDateFrom');
+                        const retryDateTo = document.getElementById('logsDateTo');
+                        if (retryDateFrom && retryDateTo) {
+                            retryDateFrom.value = today;
+                            retryDateTo.value = today;
+                            console.log('Retrying loadTableLogs function...');
+                            loadTableLogsData();
+                        }
+                    }, 500);
+                }
+            }, 100);
+        }
+        
+        // Override closeTableLogsModal function
+        function closeTableLogsModal() {
+            const modal = document.getElementById('tableLogsModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Implement loadTableLogsData function directly
+        async function loadTableLogsData() {
+            const dateFrom = document.getElementById('logsDateFrom').value;
+            const dateTo = document.getElementById('logsDateTo').value;
+            
+            if (!dateFrom || !dateTo) {
+                alert('Please select both start and end dates');
+                return;
+            }
+            
+            try {
+                console.log('Fetching table logs data...');
+                // Get both print transactions and coin data
+                const [logsResponse, coinsResponse] = await Promise.all([
+                    fetch(`/api/admin/table-logs?dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+                        headers: getAuthHeaders()
+                    }),
+                    fetch(`/api/admin/daily-coins?dateFrom=${dateFrom}&dateTo=${dateTo}`, {
+                        headers: getAuthHeaders()
+                    })
+                ]);
+                
+                if (logsResponse.status === 401 || coinsResponse.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const logsData = await logsResponse.json();
+                const coinsData = await coinsResponse.json();
+                
+                console.log('Logs data:', logsData);
+                console.log('Coins data:', coinsData);
+                
+                if (logsData.success && coinsData.success) {
+                    // Calculate totals from coin data for coin count
+                    let totalCoins = 0;
+                    
+                    coinsData.coins.forEach(coin => {
+                        totalCoins += coin.count || 0;
+                    });
+                    
+                    // Calculate revenue from actual transaction payments (more accurate than coin data)
+                    const totalRevenue = logsData.logs.reduce((sum, log) => sum + (log.coins_used || 0), 0);
+                    
+                    // Create summary with correct totals using improved success detection
+                    const knownFailedFiles = ['MATI.pdf']; // Add files that are known to have failed
+                    const actuallySuccessful = logsData.logs.filter(log => {
+                        const isKnownFailed = knownFailedFiles.some(failedFile => 
+                            log.filename && log.filename.includes(failedFile)
+                        );
+                        
+                        return log.success && 
+                               log.pages_printed > 0 && 
+                               log.paper_size !== 'unknown' &&
+                               log.color_mode !== 'unknown' &&
+                               log.total_cost > 0 &&
+                               !isKnownFailed;
+                    });
+                    
+                    const summary = {
+                        total_transactions: logsData.logs.length,
+                        successful_transactions: actuallySuccessful.length,
+                        failed_transactions: logsData.logs.length - actuallySuccessful.length,
+                        total_revenue: totalRevenue, // Use transaction payment total, more accurate than coin data
+                        total_coins: totalCoins
+                    };
+                    
+                    displayTableLogsData(logsData.logs);
+                    updateLogsSummaryData(summary);
+                } else {
+                    document.getElementById('logsTableBody').innerHTML = 
+                        '<tr><td colspan="7" style="padding: 40px; text-align: center; color: #dc3545;">Error loading logs: ' + (logsData.error || coinsData.error) + '</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading table logs:', error);
+                document.getElementById('logsTableBody').innerHTML = 
+                    '<tr><td colspan="7" style="padding: 40px; text-align: center; color: #dc3545;">Failed to load logs</td></tr>';
+            }
+        }
+        
+        function displayTableLogsData(logs) {
+            const tbody = document.getElementById('logsTableBody');
+            
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="padding: 40px; text-align: center; color: #666;">No logs found for the selected date range</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = logs.map(log => {
+                const date = new Date(log.timestamp);
+                const dateStr = date.toLocaleDateString();
+                const timeStr = date.toLocaleTimeString();
+                
+                // Check if this is an abandoned transaction
+                const isAbandoned = log.transaction_type === 'abandoned';
+                
+                // Determine if transaction actually succeeded
+                if (isAbandoned) {
+                    const amountShort = log.amount_short || (log.total_cost - log.coins_used);
+                    const statusText = `❌ Abandoned`;
+                    const reason = log.reason || 'Unknown';
+                    
+                    return `
+                        <tr style="border-bottom: 1px solid #e9ecef; background: #fff3cd;">
+                            <td style="padding: 12px; border-right: 1px solid #e9ecef;">
+                                <div style="font-weight: 600;">${dateStr}</div>
+                                <div style="font-size: 0.8rem; color: #666;">${timeStr}</div>
+                            </td>
+                            <td style="padding: 12px; border-right: 1px solid #e9ecef;">
+                                <div style="font-weight: 500; word-break: break-word;">${log.filename}</div>
+                                <div style="font-size: 0.8rem; color: #666;">${log.paper_size} • ${log.color_mode}</div>
+                                <div style="font-size: 0.75rem; color: #856404; margin-top: 4px; background: #fff8e1; padding: 2px 6px; border-radius: 3px; display: inline-block;">
+                                    <strong>Reason:</strong> ${reason}
+                                </div>
+                            </td>
+                            <td style="padding: 12px; text-align: center; border-right: 1px solid #e9ecef;">
+                                <span style="background: #ffc107; padding: 4px 8px; border-radius: 4px; font-weight: 600; color: #fff;">0</span>
+                                <div style="font-size: 0.7rem; color: #666; margin-top: 2px;">Not printed</div>
+                            </td>
+                            <td style="padding: 12px; text-align: center; border-right: 1px solid #e9ecef;">
+                                <span style="color: #ffc107; font-weight: 600;">${statusText}</span>
+                                <div style="font-size: 0.7rem; color: #856404; margin-top: 2px;">Short: ₱${amountShort.toFixed(2)}</div>
+                            </td>
+                            <td style="padding: 12px; text-align: right; border-right: 1px solid #e9ecef;">
+                                <span style="font-weight: 600; color: #1e3c72;">₱${log.total_cost.toFixed(2)}</span>
+                            </td>
+                            <td style="padding: 12px; text-align: right; border-right: 1px solid #e9ecef;">
+                                <span style="font-weight: 600; color: #ffc107;">₱${log.coins_used.toFixed(2)}</span>
+                            </td>
+                            <td style="padding: 12px; text-align: right;">
+                                <span style="font-weight: 600; color: #dc3545;">₱0.00</span>
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                // Regular completed transaction
+                // A transaction is considered failed if:
+                // 1. It's marked as not successful in the database, OR
+                // 2. It has 0 pages printed (indicating no actual printing occurred), OR
+                // 3. It has unknown paper size or color mode (indicating printer configuration issues), OR
+                // 4. It has 0 total cost (indicating no actual printing occurred), OR
+                // 5. It's a known problematic file that failed due to printer errors
+                const knownFailedFiles = ['MATI.pdf']; // Add files that are known to have failed
+                const isKnownFailed = knownFailedFiles.some(failedFile => 
+                    log.filename && log.filename.includes(failedFile)
+                );
+                
+                const isActuallySuccessful = log.success && 
+                                           log.pages_printed > 0 && 
+                                           log.paper_size !== 'unknown' &&
+                                           log.color_mode !== 'unknown' &&
+                                           log.total_cost > 0 &&
+                                           !isKnownFailed;
+                
+                const statusClass = isActuallySuccessful ? 'success' : 'failed';
+                const statusText = isActuallySuccessful ? '✅ Success' : '❌ Failed';
+                
+                return `
+                    <tr style="border-bottom: 1px solid #e9ecef;">
+                        <td style="padding: 12px; border-right: 1px solid #e9ecef;">
+                            <div style="font-weight: 600;">${dateStr}</div>
+                            <div style="font-size: 0.8rem; color: #666;">${timeStr}</div>
+                        </td>
+                        <td style="padding: 12px; border-right: 1px solid #e9ecef;">
+                            <div style="font-weight: 500; word-break: break-word;">${log.filename}</div>
+                            <div style="font-size: 0.8rem; color: #666;">${log.paper_size} • ${log.color_mode}</div>
+                        </td>
+                        <td style="padding: 12px; text-align: center; border-right: 1px solid #e9ecef;">
+                            <span style="background: #f8f9fa; padding: 4px 8px; border-radius: 4px; font-weight: 600;">${log.pages_printed}</span>
+                        </td>
+                        <td style="padding: 12px; text-align: center; border-right: 1px solid #e9ecef;">
+                            <span style="color: ${log.success ? '#28a745' : '#dc3545'}; font-weight: 600;">${statusText}</span>
+                        </td>
+                        <td style="padding: 12px; text-align: right; border-right: 1px solid #e9ecef;">
+                            <span style="font-weight: 600; color: #1e3c72;">₱${log.total_cost}</span>
+                        </td>
+                        <td style="padding: 12px; text-align: right; border-right: 1px solid #e9ecef;">
+                            <span style="font-weight: 600; color: #28a745;">₱${log.coins_used}</span>
+                        </td>
+                        <td style="padding: 12px; text-align: right;">
+                            <span style="font-weight: 600; color: #ffc107;">₱${log.change_given}</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function updateLogsSummaryData(summary) {
+            document.getElementById('totalTransactions').textContent = summary.total_transactions || 0;
+            document.getElementById('successfulTransactions').textContent = summary.successful_transactions || 0;
+            document.getElementById('failedTransactions').textContent = summary.failed_transactions || 0;
+            
+            // Update abandoned transactions if the element exists
+            const abandonedEl = document.getElementById('abandonedTransactions');
+            if (abandonedEl) {
+                abandonedEl.textContent = summary.abandoned_transactions || 0;
+            }
+            
+            document.getElementById('totalRevenue').textContent = `₱${summary.total_revenue || 0}`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,2520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piso Printer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Mobile-first responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        /* Mobile container adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                border-radius: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px 15px;
+                border-radius: 12px;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Mobile header adjustments */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+            }
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .file-upload {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #fafafa;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .file-upload.dragover {
+            border-color: #667eea;
+            background: #e8f2ff;
+        }
+
+        .file-upload:active,
+        .file-upload.active {
+            border-color: #667eea;
+            background: #e8f2ff;
+            transform: scale(0.98);
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        /* Ensure file input is accessible on all devices */
+        .file-upload input[type="file"]:focus {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        /* Desktop: Keep file input hidden but accessible */
+        @media (min-width: 769px) {
+            .file-upload input[type="file"] {
+                display: none;
+            }
+        }
+
+        /* Mobile: Make file input accessible but not interfering */
+        @media (max-width: 768px) {
+            .file-upload input[type="file"] {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0.001;
+                cursor: pointer;
+                z-index: 999;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+                pointer-events: auto;
+                /* Ensure it's accessible on all mobile browsers */
+                -webkit-appearance: none;
+                appearance: none;
+                border: none;
+                background: transparent;
+                /* Make sure it's clickable on mobile */
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            /* Force mobile file input to be accessible */
+            .file-upload input[type="file"]::-webkit-file-upload-button {
+                visibility: hidden;
+                width: 100%;
+                height: 100%;
+            }
+            
+            .file-upload input[type="file"]::file-selector-button {
+                visibility: hidden;
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        /* Mobile-specific optimizations */
+        @media (max-width: 768px) {
+            .file-upload {
+                padding: 30px 15px;
+                min-height: 120px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+            
+            .upload-icon {
+                font-size: 2.5rem;
+            }
+            
+            .upload-text {
+                font-size: 1rem;
+                font-weight: 600;
+            }
+            
+            .upload-hint {
+                font-size: 0.8rem;
+            }
+
+            /* Show mobile upload button on mobile */
+            .mobile-upload-btn {
+                display: block !important;
+                margin-top: 15px;
+                padding: 15px 30px;
+                background: #667eea;
+                color: white;
+                border: none;
+                border-radius: 25px;
+                font-size: 1.1rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                /* Ensure it's always clickable on mobile */
+                position: relative;
+                z-index: 1000;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+                user-select: none;
+                /* Make button more prominent on mobile */
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                min-height: 50px;
+                min-width: 120px;
+            }
+
+            .mobile-upload-btn:hover {
+                background: #5a6fd8;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+            }
+
+            .mobile-upload-btn:active {
+                transform: translateY(0);
+                background: #4a5fc7;
+            }
+
+        }
+
+        /* Additional mobile improvements */
+        @media (max-width: 480px) {
+            .file-upload {
+                padding: 25px 10px;
+                min-height: 100px;
+            }
+            
+            .upload-icon {
+                font-size: 2rem;
+            }
+            
+            .upload-text {
+                font-size: 0.9rem;
+            }
+            
+            .upload-hint {
+                font-size: 0.75rem;
+            }
+
+            .mobile-upload-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Ensure touch targets are large enough on mobile */
+        @media (max-width: 768px) {
+            .file-upload {
+                min-height: 120px; /* Minimum touch target size */
+            }
+            
+            .mobile-upload-btn {
+                min-height: 44px; /* iOS recommended minimum touch target */
+                min-width: 44px;
+            }
+        }
+        
+        /* Force mobile mode for captive portal environments */
+        .mobile-mode .file-upload input[type="file"] {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            opacity: 0.001 !important;
+            z-index: 999 !important;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+        
+        .mobile-mode .mobile-upload-btn {
+            display: block !important;
+            position: relative !important;
+            z-index: 1000 !important;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f2ff;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .page-count {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .coin-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .coin-display {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+
+        .coin-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .coin-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+
+        .coin-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .coin-btn:active {
+            transform: translateY(0);
+        }
+
+        .reset-btn {
+            background: #dc3545;
+            margin-left: 10px;
+        }
+
+        .reset-btn:hover {
+            background: #c82333;
+        }
+
+        .print-section {
+            text-align: center;
+        }
+
+        .print-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .print-btn:hover:not(:disabled) {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .print-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .cost-info {
+            margin-top: 15px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .page-range {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            border: 1px solid #d1ecf1;
+        }
+
+        .page-range-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .page-range-inputs {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .page-input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .page-input-group label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .page-input-group input {
+            width: 80px;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            transition: border-color 0.3s ease;
+        }
+
+        .page-input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .page-range-info {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .paper-size {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            border: 1px solid #d1ecf1;
+        }
+
+        .paper-size-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .paper-size-options {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .paper-size-btn {
+            background: #e0e0e0;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .paper-size-btn:hover {
+            background: #d0d0d0;
+            border-color: #667eea;
+        }
+
+        .paper-size-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .paper-size-info {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .paper-size-details {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .paper-size-details div {
+            margin-bottom: 5px;
+        }
+        
+
+        .color-options {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            border: 1px solid #d1ecf1;
+        }
+
+        .color-options-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .color-options-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .color-btn {
+            background: #e0e0e0;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .color-btn:hover {
+            background: #d0d0d0;
+            border-color: #667eea;
+        }
+
+        .color-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .color-info {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .printer-status-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .printer-status-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .printer-info {
+            margin-bottom: 15px;
+        }
+
+        .printer-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+
+        .printer-status {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .printer-details {
+            font-size: 0.9rem;
+            color: #333;
+            white-space: pre-wrap; /* Preserve line breaks in text */
+            word-break: break-all; /* Break long words */
+        }
+
+        .printer-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .status-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .status-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .status-btn:active {
+            transform: translateY(0);
+        }
+
+        .proceed-btn {
+            background: #ddb224;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .proceed-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .proceed-btn:active {
+            transform: translateY(0);
+            background: #4a5fc7;
+        }
+
+        .cost-preview {
+            margin-top: 15px;
+            color: #666;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .proceed-section {
+            margin-top: 20px;
+            text-align: center;
+            padding: 20px;
+            background: #f0f8ff;
+            border-radius: 15px;
+            border: 1px solid #d1ecf1;
+        }
+
+        .timer-section {
+            margin-top: 20px;
+            text-align: center;
+            padding: 20px;
+            background: #fff3cd;
+            border-radius: 15px;
+            border: 1px solid #ffeaa7;
+        }
+
+        .timer-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #e17055;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-label {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .timer-warning {
+            color: #d63031;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .queue-status {
+            margin-top: 20px;
+            padding: 25px;
+            background: #fff3cd;
+            border-radius: 15px;
+            border: 1px solid #ffeaa7;
+            text-align: center;
+        }
+
+        .queue-status-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f39c12;
+            margin-bottom: 15px;
+        }
+
+        .queue-position {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .queue-position span {
+            color: #e17055;
+            font-size: 1.5rem;
+        }
+
+        .queue-message {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .queue-estimate {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .queue-leave-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .queue-leave-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .queue-leave-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖨️ Piso Printer</h1>
+            <p>Upload your document and insert coins to print</p>
+            <div style="margin-top: 15px;">
+                <a href="/login.html" style="background: #1e3c72; color: white; padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 0.9rem; font-weight: 600;">📊 Admin Dashboard</a>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <div class="file-upload" id="fileUpload">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">Click to upload or drag & drop</div>
+                <div class="upload-hint">Supports PDF and DOCX</div>
+                <div class="upload-hint" style="font-size: 0.8rem; color: #667eea; margin-top: 5px;">
+                    ✨ Enhanced PDF support for image-only files
+                </div>
+                <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt">
+                <!-- Mobile fallback button for better accessibility -->
+                <button type="button" class="mobile-upload-btn" id="mobileUploadBtn" style="display: none;">
+                    📱 Upload File
+                </button>
+            </div>
+            <div class="file-info" id="fileInfo">
+                <div class="file-name" id="fileName"></div>
+                <div class="page-count" id="pageCount"></div>
+            </div>
+            <div class="page-range" id="pageRange" style="display: none;">
+                <div class="page-range-title">Select pages to print:</div>
+                <div class="page-range-inputs">
+                    <div class="page-input-group">
+                        <label for="startPage">From:</label>
+                        <input type="number" id="startPage" min="1" value="1">
+                    </div>
+                    <div class="page-input-group">
+                        <label for="endPage">To:</label>
+                        <input type="number" id="endPage" min="1" value="1">
+                    </div>
+                </div>
+                <div class="page-range-info" id="pageRangeInfo"></div>
+            </div>
+            <div class="paper-size" id="paperSize" style="display: none;">
+                <div class="paper-size-title">Select paper size:</div>
+                <div class="paper-size-options">
+                    <button class="paper-size-btn active" id="shortBtn" onclick="selectPaperSize('short')">
+                        📄 Short (8.5" × 11")
+                    </button>
+                    <!-- <button class="paper-size-btn" id="longBtn" onclick="selectPaperSize('long')">
+                        📄 Long (8.5" × 14")
+                    </button> -->
+                </div>
+                <div class="paper-size-info" id="paperSizeInfo"></div>
+                <div class="paper-size-details" id="paperSizeDetails" style="margin-top: 10px; font-size: 0.8rem; color: #666;">
+                    <div>📏 <strong>Short:</strong> Letter size (8.5" × 11") - Standard paper</div>
+                    <!-- <div>📏 <strong>Long:</strong> Legal size (8.5" × 14") - Extended paper</div> -->
+                </div>
+            </div>
+            <div class="color-options" id="colorOptions" style="display: none;">
+                <div class="color-options-title">Select print color:</div>
+                <div class="color-options-buttons">
+                    <button class="color-btn active" id="grayscaleBtn" onclick="selectColor('grayscale')">
+                        ⚫ Grayscale
+                    </button>
+                    <button class="color-btn" id="coloredBtn" onclick="selectColor('colored')">
+                        🌈 Colored
+                    </button>
+                </div>
+                <div class="color-info" id="colorInfo"></div>
+            </div>
+            <div class="proceed-section" id="proceedSection" style="display: none;">
+                <button id="proceedBtn" class="proceed-btn" onclick="proceedToPayment()">
+                    ➡️ Proceed to Payment
+                </button>
+                <div class="cost-preview" id="costPreview">
+                    Cost: ₱0 (₱1 per page)
+                </div>
+            </div>
+        </div>
+
+        <!-- Coin Section - Shows coins inserted via Arduino selector -->
+        <div class="coin-section" id="coinSection" style="display: none;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">💰 Coins Inserted</div>
+                <div class="coin-display" id="coinDisplay">₱0</div>
+                <div style="font-size: 0.85rem; color: #999; margin-top: 10px;">Insert coins in the selector to add funds</div>
+            </div>
+            <!-- Manual coin buttons disabled - coins are now detected via Arduino only -->
+            <!--
+            <div class="coin-buttons">
+                <button class="coin-btn" onclick="addCoin(1)">₱1</button>
+                <button class="coin-btn" onclick="addCoin(5)">₱5</button>
+                <button class="coin-btn" onclick="addCoin(10)">₱10</button>
+                <button class="coin-btn" onclick="addCoin(20)">₱20</button>
+                <button class="coin-btn reset-btn" onclick="resetCoins()">Reset</button>
+            </div>
+            -->
+        </div>
+
+        <div class="print-section" id="printSection" style="display: none;">
+            <button id="printBtn" class="print-btn" onclick="printDocument()" disabled>
+                Print Document (₱0.00)
+            </button>
+            
+            <div class="cost-info" id="costInfo">
+                Cost: ₱0 (₱1 per page)
+            </div>
+        </div>
+
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        let coinsInserted = 0;
+        let sessionId = null; // Unique session ID for this device
+        let queueCheckInterval = null; // Interval for checking queue status
+        let isInQueue = false; // Track if user is in queue
+        let queueSystemAvailable = true; // Track if queue system is available on server
+        let isActiveInQueue = false; // Track if user is currently active in queue
+        let totalPages = 0;
+        let selectedFile = null;
+        let currentAnalysisId = 0; // To track the latest analysis request
+        let selectedStartPage = 1;
+        let selectedEndPage = 1;
+        let selectedPaperSize = 'short';
+        let selectedColor = 'grayscale'; // Default to grayscale
+        let isFileInputOpen = false; // Prevent double file input opening
+        let isPrinting = false; // Prevent multiple print requests
+        // Pricing configuration - will be loaded from server
+        let pricingConfig = {
+            shortPaper: { grayscale: 3.00, colored: 5.40 },
+            longPaper: { grayscale: 5.00, colored: 9.00 }
+        };
+        
+        // Timer variables
+        let timerInterval = null;
+        let timeRemaining = 60; // 1 minute in seconds
+        let audioContext = null; // Store audio context globally
+        let hasStartedPayment = false; // Track if user has started payment process
+
+        // Function to load pricing configuration from server
+        async function loadPricingConfig() {
+            try {
+                const response = await fetch('/api/pricing-config');
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        pricingConfig = result.data;
+                        console.log('Pricing configuration loaded:', pricingConfig);
+                        updateCostInfo(); // Update cost display with new pricing
+                        checkPrintButton(); // Update print button state
+                    }
+                } else {
+                    console.log('Could not load pricing configuration, using defaults');
+                }
+            } catch (error) {
+                console.log('Could not load pricing configuration, using defaults:', error);
+                // Keep default pricing config
+            }
+        }
+
+        // Function to initialize audio context
+        function initAudioContext() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    // Resume audio context if it's suspended (required for mobile)
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                } catch (error) {
+                    console.log('Could not initialize audio context:', error);
+                }
+            }
+            return audioContext;
+        }
+
+
+        // Function to play notification sound when user becomes active
+        function playNotificationSound() {
+            try {
+                const ctx = initAudioContext();
+                if (!ctx) return;
+                
+                // Resume audio context if suspended
+                if (ctx.state === 'suspended') {
+                    ctx.resume().then(() => {
+                        playNotificationSound();
+                    });
+                    return;
+                }
+                
+                // Play a pleasant notification sound (rising tone)
+                playUrgentBeep(ctx, 800, 0.15, 0.4);
+                setTimeout(() => playUrgentBeep(ctx, 1000, 0.15, 0.4), 150);
+                setTimeout(() => playUrgentBeep(ctx, 1200, 0.2, 0.5), 300);
+            } catch (error) {
+                console.log('Could not play notification sound:', error);
+            }
+        }
+
+        // Function to play beep sound
+        function playBeepSound() {
+            try {
+                const ctx = initAudioContext();
+                if (!ctx) return;
+                
+                // Resume audio context if suspended (mobile requirement)
+                if (ctx.state === 'suspended') {
+                    ctx.resume().then(() => {
+                        playBeepSound();
+                    });
+                    return;
+                }
+                
+                // Different urgent sounds based on time remaining (PISO Computer style)
+                if (timeRemaining <= 10) {
+                    // Critical urgency - high frequency mechanical buzzer, LOUD
+                    playUrgentBeep(ctx, 2000, 0.2, 0.6); // 2kHz - authentic PISO computer sound
+                } else if (timeRemaining <= 30) {
+                    // Medium urgency - medium frequency mechanical buzzer, double beep
+                    playUrgentBeep(ctx, 1800, 0.15, 0.5);
+                    setTimeout(() => playUrgentBeep(ctx, 1800, 0.15, 0.5), 100);
+                } else {
+                    // Normal urgency - standard mechanical buzzer
+                    playUrgentBeep(ctx, 1600, 0.1, 0.4);
+                }
+            } catch (error) {
+                console.log('Could not play beep sound:', error);
+            }
+        }
+
+        // Function to play urgent beep with specific parameters (PISO Computer style)
+        function playUrgentBeep(ctx, frequency, duration, volume) {
+            try {
+                // PISO Computer style: Simple mechanical buzzer sound
+                // Main buzzer tone - simple and mechanical
+                const mainOsc = ctx.createOscillator();
+                const mainGain = ctx.createGain();
+                mainOsc.connect(mainGain);
+                mainGain.connect(ctx.destination);
+                
+                // Use square wave for sharp mechanical buzzer sound
+                mainOsc.frequency.setValueAtTime(frequency, ctx.currentTime);
+                mainOsc.type = 'square';
+                
+                // Simple envelope - sharp attack, quick decay (like PISO computer)
+                const attackTime = 0.002; // Quick attack
+                const sustainTime = duration * 0.6;
+                const releaseTime = duration * 0.4;
+                
+                // Main tone envelope - simple mechanical buzzer
+                mainGain.gain.setValueAtTime(0, ctx.currentTime);
+                mainGain.gain.linearRampToValueAtTime(volume, ctx.currentTime + attackTime);
+                mainGain.gain.linearRampToValueAtTime(volume * 0.8, ctx.currentTime + attackTime + sustainTime);
+                mainGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                
+                // Start oscillator
+                mainOsc.start(ctx.currentTime);
+                
+                // Stop oscillator
+                mainOsc.stop(ctx.currentTime + duration);
+                
+            } catch (error) {
+                console.log('Could not play urgent beep:', error);
+            }
+        }
+
+        // Function to update timer display
+        function updateTimerDisplay() {
+            const timerDisplay = document.getElementById('timerDisplay');
+            const timerWarning = document.getElementById('timerWarning');
+            
+            if (timerDisplay) {
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Change color based on time remaining
+                if (timeRemaining <= 10) {
+                    timerDisplay.style.color = '#d63031'; // Red for last 10 seconds
+                    timerWarning.textContent = '⚠️ Time running out! Complete payment now!';
+                    timerWarning.style.color = '#d63031';
+                } else if (timeRemaining <= 30) {
+                    timerDisplay.style.color = '#f39c12'; // Orange for last 30 seconds
+                    timerWarning.textContent = '⏰ Hurry up! Time is running out!';
+                    timerWarning.style.color = '#f39c12';
+                } else {
+                    timerDisplay.style.color = '#e17055'; // Default color
+                    timerWarning.textContent = 'Complete payment within the time limit';
+                    timerWarning.style.color = '#d63031';
+                }
+            }
+        }
+
+        // Function to start the timer
+        function startTimer() {
+            // Stop any existing timer first
+            stopTimer();
+            
+            // Initialize audio context for mobile compatibility
+            initAudioContext();
+            
+            timeRemaining = 60; // Reset to 1 minute
+            updateTimerDisplay();
+            
+            
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                
+                // Play beep sound every second
+                playBeepSound();
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    
+                    // Timer expired - leave queue to allow next person to proceed
+                    if (isInQueue && sessionId) {
+                        showStatus('⏰ Time expired! Activating next person in queue...', 'error');
+                        // Leave queue immediately with reason for abandoned transaction logging
+                        leaveQueue(false, 'Timer expired').then(() => {
+                            console.log('✅ Queue cleared - next person should now be active');
+                        });
+                    } else {
+                        // Not in queue, log abandoned if payment started
+                        if (hasStartedPayment && selectedFile) {
+                            logAbandonedTransaction('Timer expired');
+                        }
+                        showStatus('⏰ Time expired! Please try again.', 'error');
+                        setTimeout(() => {
+                            backToUpload();
+                        }, 2000);
+                    }
+                }
+            }, 1000);
+        }
+
+        // Function to stop the timer
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function selectPaperSize(size) {
+            selectedPaperSize = size;
+            
+            // Update button states
+            shortBtn.classList.toggle('active', size === 'short');
+            // longBtn.classList.toggle('active', size === 'long'); // Long button commented out
+            
+            // Update paper size info
+            // Always use short paper since long is disabled
+            paperSizeInfo.textContent = `Short paper: ₱${pricingConfig.shortPaper.grayscale} per page (grayscale)`;
+            // if (size === 'short') {
+            //     paperSizeInfo.textContent = `Short paper: ₱${pricingConfig.shortPaper.grayscale} per page (grayscale)`;
+            // } else {
+            //     paperSizeInfo.textContent = `Long paper: ₱${pricingConfig.longPaper.grayscale} per page (grayscale)`;
+            // }
+            
+            updateCostInfo();
+            checkPrintButton();
+        }
+        
+
+        function selectColor(color) {
+            selectedColor = color;
+            
+            // Update button states
+            grayscaleBtn.classList.toggle('active', color === 'grayscale');
+            coloredBtn.classList.toggle('active', color === 'colored');
+            
+            // Update color info
+            colorInfo.textContent = `Printing in ${color} mode.`;
+            
+            updateCostInfo();
+            checkPrintButton();
+        }
+
+        function updatePageRange() {
+            selectedStartPage = parseInt(startPageInput.value) || 1;
+            selectedEndPage = parseInt(endPageInput.value) || 1;
+            
+            // Validate page range
+            if (selectedStartPage < 1) {
+                selectedStartPage = 1;
+                startPageInput.value = 1;
+            }
+            if (selectedEndPage > totalPages) {
+                selectedEndPage = totalPages;
+                endPageInput.value = totalPages;
+            }
+            if (selectedStartPage > selectedEndPage) {
+                selectedStartPage = selectedEndPage;
+                startPageInput.value = selectedStartPage;
+            }
+            
+            updatePageRangeInfo();
+            updateCostInfo();
+            checkPrintButton();
+        }
+
+        function updatePageRangeInfo() {
+            const pagesToPrint = selectedEndPage - selectedStartPage + 1;
+            if (pagesToPrint === 1) {
+                pageRangeInfo.textContent = `Printing page ${selectedStartPage}`;
+            } else {
+                pageRangeInfo.textContent = `Printing pages ${selectedStartPage}-${selectedEndPage} (${pagesToPrint} pages)`;
+            }
+        }
+
+        // File upload handling
+        const fileUpload = document.getElementById('fileUpload');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const pageCount = document.getElementById('pageCount');
+        const pageRange = document.getElementById('pageRange');
+        const startPageInput = document.getElementById('startPage');
+        const endPageInput = document.getElementById('endPage');
+        const pageRangeInfo = document.getElementById('pageRangeInfo');
+        const paperSize = document.getElementById('paperSize');
+        const shortBtn = document.getElementById('shortBtn');
+        // const longBtn = document.getElementById('longBtn'); // Long button commented out
+        const paperSizeInfo = document.getElementById('paperSizeInfo');
+        const colorOptions = document.getElementById('colorOptions');
+        const grayscaleBtn = document.getElementById('grayscaleBtn');
+        const coloredBtn = document.getElementById('coloredBtn');
+        const colorInfo = document.getElementById('colorInfo');
+        const proceedSection = document.getElementById('proceedSection');
+        const proceedBtn = document.getElementById('proceedBtn');
+        const costPreview = document.getElementById('costPreview');
+
+        // Page range event listeners
+        startPageInput.addEventListener('change', updatePageRange);
+        endPageInput.addEventListener('change', updatePageRange);
+
+        // Mobile upload button reference (event listeners are set up later)
+        const mobileUploadBtn = document.getElementById('mobileUploadBtn');
+
+        // Function to detect mobile devices - more robust for captive portals
+        function isMobileDevice() {
+            // Multiple detection methods for better reliability
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+            const isSmallScreen = window.innerWidth <= 768;
+            const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const hasMobileFeatures = 'maxTouchPoints' in navigator || 'msMaxTouchPoints' in navigator;
+            
+            // Force mobile detection for small screens or touch devices
+            const forceMobile = window.innerWidth <= 768 || hasTouch || hasMobileFeatures;
+            
+            // Additional mobile detection for better reliability
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile/i.test(userAgent);
+            
+            console.log('Device detection:', {
+                userAgent: userAgent,
+                isMobile: isMobile,
+                isMobileDevice: isMobileDevice,
+                isSmallScreen: isSmallScreen,
+                hasTouch: hasTouch,
+                hasMobileFeatures: hasMobileFeatures,
+                isPortrait: isPortrait,
+                windowWidth: window.innerWidth,
+                windowHeight: window.innerHeight,
+                forceMobile: forceMobile,
+                result: isMobile || isMobileDevice || isSmallScreen || hasTouch || forceMobile
+            });
+            
+            return isMobile || isMobileDevice || isSmallScreen || hasTouch || forceMobile;
+        }
+
+        // Show/hide mobile upload button based on device
+        function toggleMobileUploadButton() {
+            const isMobile = isMobileDevice();
+            console.log('Toggle mobile button:', isMobile);
+            
+            if (isMobile) {
+                mobileUploadBtn.style.display = 'block';
+                // Force mobile mode for captive portal environments
+                document.body.classList.add('mobile-mode');
+                console.log('Mobile mode enabled');
+            } else {
+                mobileUploadBtn.style.display = 'none';
+                document.body.classList.remove('mobile-mode');
+            }
+        }
+
+        // Initialize mobile upload button visibility
+        toggleMobileUploadButton();
+
+        // Update on window resize
+        window.addEventListener('resize', toggleMobileUploadButton);
+        
+        // Additional mobile fallback for captive portal environments
+        if (isMobileDevice()) {
+            // Create a hidden but accessible file input as backup
+            const backupFileInput = document.createElement('input');
+            backupFileInput.type = 'file';
+            backupFileInput.accept = '.pdf,.doc,.docx,.txt';
+            backupFileInput.style.cssText = `
+                position: fixed;
+                top: -1000px;
+                left: -1000px;
+                opacity: 0;
+                pointer-events: none;
+            `;
+            document.body.appendChild(backupFileInput);
+            
+            // Add change listener to backup input
+            backupFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    console.log('Backup file input triggered');
+                    handleFile(e.target.files[0]);
+                }
+            });
+            
+            // Override the main file input click for mobile
+            const originalClick = fileInput.click;
+            fileInput.click = function() {
+                console.log('File input click intercepted for mobile');
+                if (isMobileDevice()) {
+                    backupFileInput.click();
+                } else {
+                    originalClick.call(this);
+                }
+            };
+            
+            console.log('Mobile fallback file input created');
+        }
+
+        // Fallback: Ensure file input is always accessible
+        fileInput.addEventListener('click', (e) => {
+            console.log('File input clicked directly');
+        });
+
+        // Create a reliable file input trigger with debounce
+        const triggerFileInput = (e) => {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // Prevent multiple rapid clicks
+            if (isFileInputOpen) {
+                console.log('File input already open, ignoring click');
+                return;
+            }
+            
+            console.log('Triggering file input');
+            isFileInputOpen = true;
+            
+            // Clear any previous selection and trigger file input
+            fileInput.value = '';
+            
+            // Try to trigger file input
+            try {
+                fileInput.click();
+            } catch (error) {
+                console.log('Standard click failed, trying alternative method');
+                // Fallback for mobile devices
+                if (isMobileDevice()) {
+                    // Create a temporary file input and trigger it
+                    const tempInput = document.createElement('input');
+                    tempInput.type = 'file';
+                    tempInput.accept = '.pdf,.doc,.docx,.txt';
+                    tempInput.style.position = 'absolute';
+                    tempInput.style.left = '-9999px';
+                    tempInput.style.top = '-9999px';
+                    
+                    tempInput.addEventListener('change', (e) => {
+                        if (e.target.files.length > 0) {
+                            handleFile(e.target.files[0]);
+                        }
+                        document.body.removeChild(tempInput);
+                    });
+                    
+                    document.body.appendChild(tempInput);
+                    tempInput.click();
+                }
+            }
+            
+            // Reset flag after a short delay
+            setTimeout(() => {
+                isFileInputOpen = false;
+            }, 1000);
+        };
+
+        // Set up file upload event handlers
+        fileUpload.addEventListener('click', triggerFileInput);
+        
+        // Mobile button handling
+        if (isMobileDevice()) {
+            mobileUploadBtn.style.display = 'block';
+            mobileUploadBtn.addEventListener('click', triggerFileInput);
+            
+            // Add visual feedback for mobile button
+            mobileUploadBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                mobileUploadBtn.style.transform = 'scale(0.98)';
+            }, { passive: false });
+            
+            mobileUploadBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                mobileUploadBtn.style.transform = 'scale(1)';
+            }, { passive: false });
+        }
+        
+        // Touch events for mobile devices
+        fileUpload.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('active');
+        }, { passive: false });
+        
+        fileUpload.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('active');
+            // Don't trigger file input here to avoid double opening
+        }, { passive: false });
+        
+        // Add touch events to the entire upload area
+        fileUpload.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+        
+        // Additional mobile touch handling for better reliability
+        if (isMobileDevice()) {
+            fileUpload.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                fileUpload.classList.add('active');
+            }, { passive: false });
+            
+            // Add a more direct touch handler for mobile
+            fileUpload.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                fileUpload.classList.remove('active');
+                
+                // Small delay to ensure touch is complete
+                setTimeout(() => {
+                    if (!isFileInputOpen) {
+                        triggerFileInput(e);
+                    }
+                }, 100);
+            }, { passive: false });
+        }
+        
+        console.log('File input handling configured');
+
+        // Debug logging for troubleshooting
+        console.log('File upload initialized:', {
+            isMobile: isMobileDevice(),
+            fileUpload: fileUpload,
+            fileInput: fileInput,
+            mobileUploadBtn: mobileUploadBtn,
+            userAgent: navigator.userAgent,
+            touchSupport: 'ontouchstart' in window,
+            maxTouchPoints: navigator.maxTouchPoints
+        });
+        
+        // Additional mobile debugging
+        if (isMobileDevice()) {
+            console.log('Mobile device detected - Mobile button should be visible');
+            console.log('Mobile button display:', mobileUploadBtn.style.display);
+            console.log('Mobile button visibility:', mobileUploadBtn.offsetParent !== null);
+            console.log('File input styles:', {
+                position: fileInput.style.position,
+                zIndex: fileInput.style.zIndex,
+                opacity: fileInput.style.opacity,
+                pointerEvents: fileInput.style.pointerEvents
+            });
+        }
+
+        // Test click functionality
+        setTimeout(() => {
+            console.log('Testing file upload functionality...');
+            console.log('File upload area clickable:', fileUpload.onclick !== null);
+            console.log('File input accessible:', fileInput.style.display !== 'none' || fileInput.offsetParent !== null);
+            console.log('Mobile button visible:', mobileUploadBtn.style.display);
+            console.log('File input styles:', {
+                display: fileInput.style.display,
+                position: fileInput.style.position,
+                zIndex: fileInput.style.zIndex,
+                pointerEvents: fileInput.style.pointerEvents
+            });
+        }, 1000);
+
+        // Touch events for mobile devices only
+        if (isMobileDevice()) {
+            fileUpload.addEventListener('touchcancel', () => {
+                fileUpload.classList.remove('active');
+            });
+        }
+
+        // Desktop drag and drop events
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('dragover');
+        });
+        fileUpload.addEventListener('dragleave', () => {
+            fileUpload.classList.remove('dragover');
+        });
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                // Reset the file input open flag
+                isFileInputOpen = false;
+                // Clear file input when using drag and drop
+                fileInput.value = '';
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            // Reset the file input open flag
+            isFileInputOpen = false;
+            
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        async function handleFile(file) {
+            // Increment analysis ID to track the latest request
+            currentAnalysisId++;
+            const thisAnalysisId = currentAnalysisId;
+            
+            // Clear the file input to ensure proper change detection
+            fileInput.value = '';
+            
+            selectedFile = file;
+            fileName.textContent = file.name;
+            
+            // Reset state for new file
+            totalPages = 0;
+            updateCostInfo();
+            checkPrintButton();
+            
+            // Show loading state
+            pageCount.textContent = 'Analyzing file...';
+            fileInfo.classList.add('show');
+            
+            try {
+                // Use server-side API for accurate page counting
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch('/api/page-count', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                // Only update if this is still the latest analysis request
+                if (thisAnalysisId === currentAnalysisId) {
+                    if (result.success) {
+                        totalPages = result.pageCount;
+                        
+                        // Initialize page range inputs
+                        selectedStartPage = 1;
+                        selectedEndPage = totalPages;
+                        startPageInput.value = 1;
+                        endPageInput.value = totalPages;
+                        startPageInput.max = totalPages;
+                        endPageInput.max = totalPages;
+                        
+                        // Display page count based on file type
+                        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                            pageCount.textContent = `Pages: ${totalPages}`;
+                        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.name.toLowerCase().endsWith('.docx')) {
+                            pageCount.textContent = `Pages: ${totalPages}`;
+                        } else {
+                            pageCount.textContent = `Pages: ~${totalPages} (estimated)`;
+                        }
+                        
+                        updatePageRangeInfo();
+                        updateCostInfo();
+                        checkPrintButton();
+                                                 pageRange.style.display = 'block'; // Show page range section
+                         paperSize.style.display = 'block'; // Show paper size section
+                         selectPaperSize('short'); // Initialize with short paper
+                         colorOptions.style.display = 'block'; // Show color options section
+                         selectColor('grayscale'); // Initialize with grayscale
+                         proceedSection.style.display = 'block'; // Show proceed section
+                    } else {
+                        throw new Error(result.error || 'Unknown error');
+                    }
+                }
+                
+            } catch (error) {
+                // Only show error if this is still the latest analysis request
+                if (thisAnalysisId === currentAnalysisId) {
+                    console.error('Error analyzing file:', error);
+                    pageCount.textContent = 'Error analyzing file';
+                    showStatus('Error analyzing file. Please try again.', 'error');
+                }
+            }
+        }
+
+        // Coin handling
+        function addCoin(amount) {
+            coinsInserted += amount;
+            updateCoinDisplay();
+            checkPrintButton();
+            
+            // Reset timer when coin is inserted (if we're in payment section)
+            if (timerInterval) {
+                startTimer(); // This will reset the timer to 1 minute
+            }
+        }
+
+        function resetCoins() {
+            coinsInserted = 0;
+            updateCoinDisplay();
+            checkPrintButton();
+        }
+
+        function updateCoinDisplay() {
+            document.getElementById('coinDisplay').textContent = `₱${coinsInserted}`;
+        }
+
+        function updateCostInfo() {
+            const pagesToPrint = selectedEndPage - selectedStartPage + 1;
+            let baseCost;
+            
+            // Always use short paper pricing since long is disabled
+            baseCost = selectedColor === 'colored' ? pricingConfig.shortPaper.colored : pricingConfig.shortPaper.grayscale;
+            // if (selectedPaperSize === 'long') {
+            //     baseCost = selectedColor === 'colored' ? pricingConfig.longPaper.colored : pricingConfig.longPaper.grayscale;
+            // } else {
+            //     baseCost = selectedColor === 'colored' ? pricingConfig.shortPaper.colored : pricingConfig.shortPaper.grayscale;
+            // }
+            
+            const totalCost = pagesToPrint * baseCost;
+            
+            let costText = `Cost: ₱${totalCost.toFixed(2)} (₱${baseCost} per page`;
+            if (selectedColor === 'colored') {
+                costText += `, colored`;
+            } else {
+                costText += `, grayscale`;
+            }
+            costText += `)`;
+            
+            document.getElementById('costInfo').textContent = costText;
+            if (costPreview) {
+                costPreview.textContent = costText;
+            }
+            
+            // Update prominent cost display in payment section
+            const totalCostDisplay = document.getElementById('totalCostDisplay');
+            const costDetailsDisplay = document.getElementById('costDetailsDisplay');
+            if (totalCostDisplay) {
+                totalCostDisplay.textContent = `₱${totalCost.toFixed(2)}`;
+            }
+            if (costDetailsDisplay) {
+                const pagesText = pagesToPrint === 1 ? '1 page' : `${pagesToPrint} pages`;
+                const paperText = 'Short paper'; // Always short since long is disabled
+                // const paperText = selectedPaperSize === 'long' ? 'Long paper' : 'Short paper';
+                const colorText = selectedColor === 'colored' ? 'Colored' : 'Grayscale';
+                costDetailsDisplay.textContent = `${pagesText} • ${paperText} • ${colorText}`;
+            }
+        }
+
+        function checkPrintButton() {
+            const printBtn = document.getElementById('printBtn');
+            const pagesToPrint = selectedEndPage - selectedStartPage + 1;
+            let baseCost;
+            
+            // Always use short paper pricing since long is disabled
+            baseCost = selectedColor === 'colored' ? pricingConfig.shortPaper.colored : pricingConfig.shortPaper.grayscale;
+            // if (selectedPaperSize === 'long') {
+            //     baseCost = selectedColor === 'colored' ? pricingConfig.longPaper.colored : pricingConfig.longPaper.grayscale;
+            // } else {
+            //     baseCost = selectedColor === 'colored' ? pricingConfig.shortPaper.colored : pricingConfig.shortPaper.grayscale;
+            // }
+            
+            const totalCost = pagesToPrint * baseCost;
+            
+            if (isPrinting) {
+                // If currently printing, disable button and show printing status
+                printBtn.disabled = true;
+                printBtn.textContent = '🖨️ Printing...';
+            } else if (selectedFile && coinsInserted >= totalCost && totalCost > 0) {
+                // If ready to print, enable button
+                printBtn.disabled = false;
+                printBtn.textContent = `🖨️ Print Document (₱${totalCost.toFixed(2)})`;
+            } else {
+                // If not ready, disable button
+                printBtn.disabled = true;
+                printBtn.textContent = '🖨️ Print Document';
+            }
+        }
+
+        async function printDocument() {
+            // Prevent multiple print requests
+            if (isPrinting) {
+                showStatus('⏳ Printing in progress, please wait...', 'info');
+                return;
+            }
+            
+            // Check if file is selected
+            if (!selectedFile) {
+                showStatus('❌ No file selected for printing', 'error');
+                return;
+            }
+            
+            // Set printing state
+            isPrinting = true;
+            checkPrintButton(); // Update button state
+            
+            console.log('Selected file:', selectedFile);
+            console.log('File name:', selectedFile.name);
+            console.log('File size:', selectedFile.size);
+            console.log('File type:', selectedFile.type);
+            
+            const pagesToPrint = selectedEndPage - selectedStartPage + 1;
+            let baseCost;
+            
+            // Always use short paper pricing since long is disabled
+            baseCost = selectedColor === 'colored' ? pricingConfig.shortPaper.colored : pricingConfig.shortPaper.grayscale;
+            // if (selectedPaperSize === 'long') {
+            //     baseCost = selectedColor === 'colored' ? pricingConfig.longPaper.colored : pricingConfig.longPaper.grayscale;
+            // } else {
+            //     baseCost = selectedColor === 'colored' ? pricingConfig.shortPaper.colored : pricingConfig.shortPaper.grayscale;
+            // }
+            
+            const totalCost = pagesToPrint * baseCost;
+            const change = coinsInserted - totalCost;
+            
+            const paperSizeText = 'Short'; // Always short since long is disabled
+            // const paperSizeText = selectedPaperSize === 'long' ? 'Long' : 'Short';
+            const colorText = selectedColor === 'colored' ? 'Colored' : 'Grayscale';
+            
+            showStatus(`Printing pages ${selectedStartPage}-${selectedEndPage} of ${selectedFile.name} (${paperSizeText}, ${colorText})...`, 'success');
+            
+            try {
+                // Create FormData with file and print settings
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                formData.append('startPage', selectedStartPage);
+                formData.append('endPage', selectedEndPage);
+                formData.append('paperSize', selectedPaperSize);
+                formData.append('colorMode', selectedColor);
+                formData.append('coinsInserted', coinsInserted);
+                formData.append('change', change);
+                formData.append('sessionId', getOrCreateSessionId());
+                
+                // Debug logging
+                console.log('Print request details:');
+                console.log('  - File:', selectedFile.name);
+                console.log('  - Start Page:', selectedStartPage, '(type:', typeof selectedStartPage, ')');
+                console.log('  - End Page:', selectedEndPage, '(type:', typeof selectedEndPage, ')');
+                console.log('  - Paper Size:', selectedPaperSize);
+                console.log('  - Color Mode:', selectedColor);
+                
+                // Send to print endpoint
+                console.log('Sending print request to server...');
+                const response = await fetch('/api/print', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Server error response:', errorText);
+                    throw new Error(`Print error: ${response.status} - ${errorText}`);
+                }
+                
+                const result = await response.json();
+                console.log('Print result:', result);
+                
+                if (result.success) {
+                    // Stop payment timer after successful print
+                    stopTimer();
+                    timeRemaining = 60;
+                    updateTimerDisplay();
+                    console.log('✅ Print request accepted - timer stopped');
+                    
+                    // Disable coin acceptance after payment is complete
+                    try {
+                        await fetch('/api/arduino-disable-coins', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        console.log('✅ Arduino coin selector deactivated after payment');
+                    } catch (error) {
+                        console.warn('⚠️ Could not disable coins:', error);
+                    }
+                    
+                    // Clear queue monitoring and reset flags
+                    isInQueue = false;
+                    isActiveInQueue = false;
+                    hasStartedPayment = false; // Reset payment flag on successful print
+                    clearInterval(queueCheckInterval);
+                    
+                    showStatus(`🖨️ Printing pages ${selectedStartPage}-${selectedEndPage}... Change: ₱${change.toFixed(2)}`, 'success');
+
+                    // If server saved a 30-min copy, open both the HTTP URL and reveal local path in Explorer
+                    if (result.saved) {
+                        console.log('Saved file (30 min):', result.saved);
+                        // Avoid auto-opening viewer to prevent confusion with printing; keep only Explorer reveal
+                        // if (result.saved.url) {
+                        //     try { window.open(result.saved.url, '_blank'); } catch (e) { console.warn('Could not auto-open saved URL:', e); }
+                        // }
+                        // if (result.saved.file) {
+                        //     try {
+                        //         fetch('/api/open-saved', {
+                        //             method: 'POST',
+                        //             headers: { 'Content-Type': 'application/json' },
+                        //             body: JSON.stringify({ filename: result.saved.file })
+                        //         }).catch(() => {});
+                        //     } catch (_) {}
+                        // }
+                        if (result.saved.localPath) {
+                            console.log('Local path:', result.saved.localPath);
+                        }
+                    }
+                    
+                    // Reset everything after successful printing
+                    resetCoins();
+                    selectedFile = null;
+                    totalPages = 0;
+                    selectedStartPage = 1;
+                    selectedEndPage = 1;
+                    startPageInput.value = 1;
+                    endPageInput.value = 1;
+                    selectedPaperSize = 'short';
+                    shortBtn.classList.add('active');
+                    // longBtn.classList.remove('active'); // Long button commented out
+                    selectedColor = 'grayscale';
+                    grayscaleBtn.classList.add('active');
+                    coloredBtn.classList.remove('active');
+                    fileInfo.classList.remove('show');
+                    pageRange.style.display = 'none';
+                    paperSize.style.display = 'none';
+                    colorOptions.style.display = 'none';
+                    fileInput.value = '';
+                    checkPrintButton();
+                    
+                    // Clear queue status and reset flags
+                    isInQueue = false;
+                    isActiveInQueue = false;
+                    clearInterval(queueCheckInterval);
+                    const queueStatusDiv = document.getElementById('queueStatus');
+                    if (queueStatusDiv) {
+                        queueStatusDiv.style.display = 'none';
+                    }
+                } else {
+                    throw new Error(result.error || 'Printing failed');
+                }
+                
+            } catch (error) {
+                console.error('Print error:', error);
+                
+                // Check if it's a queue error
+                if (error.message.includes('Not your turn')) {
+                    showStatus('⚠️ Not your turn to pay. Please wait in queue.', 'error');
+                    // Re-join queue if needed
+                    if (!isInQueue) {
+                        joinQueue();
+                    }
+                } else {
+                    showStatus(`❌ Print failed: ${error.message}`, 'error');
+                }
+            } finally {
+                // Reset printing state regardless of success or failure
+                isPrinting = false;
+                checkPrintButton();
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Generate unique session ID for this device
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Try to restore session ID from localStorage, or generate new one
+            sessionId = localStorage.getItem('pisoSessionId');
+            if (!sessionId) {
+                sessionId = generateSessionId();
+                localStorage.setItem('pisoSessionId', sessionId);
+            }
+            console.log('Device session ID:', sessionId);
+            
+            // Application is ready
+            
+            // Load pricing configuration from server
+            loadPricingConfig();
+            
+            // Set up coin detection listener
+            checkForNewCoins();
+            
+            // Listen for pricing updates from admin panel
+            window.addEventListener('message', function(event) {
+                if (event.data && event.data.type === 'PRICING_UPDATED') {
+                    console.log('Pricing configuration updated, reloading...');
+                    loadPricingConfig();
+                }
+            });
+        });
+        
+        // Check for new coins detected by Arduino
+        async function checkForNewCoins() {
+            try {
+                const response = await fetch('/api/arduino-status');
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.lastCoin) {
+                        const timeAgo = Math.floor((Date.now() - result.lastCoin.timestamp) / 1000);
+                        
+                        // Auto-add coin if it's recent (within last 5 seconds) and we haven't processed it
+                        if (timeAgo <= 5) {
+                            const coinKey = `${result.lastCoin.timestamp}_${result.lastCoin.value}`;
+                            if (!window.lastProcessedCoin || 
+                                window.lastProcessedCoin.key !== coinKey) {
+                                
+                                // CRITICAL FIX: Only add coin if:
+                                // 1. Coin is not claimed yet, AND
+                                // 2. This session is currently active in the queue
+                                // This prevents coins from being routed to wrong sessions
+                                if (!result.lastCoin.isClaimed && isActiveInQueue) {
+                                    window.lastProcessedCoin = { key: coinKey, timestamp: result.lastCoin.timestamp };
+                                    addCoin(result.lastCoin.value);
+                                    showStatus(`🪙 Coin detected: ₱${result.lastCoin.value}`, 'success');
+                                    
+                                    // Claim this coin for our session
+                                    claimCoinForSession(result.lastCoin.timestamp, result.lastCoin.value);
+                                } else if (result.lastCoin.isClaimed && result.lastCoin.sessionId === sessionId) {
+                                    // If already claimed for our session, add it
+                                    window.lastProcessedCoin = { key: coinKey, timestamp: result.lastCoin.timestamp };
+                                    addCoin(result.lastCoin.value);
+                                    showStatus(`🪙 Coin detected: ₱${result.lastCoin.value}`, 'success');
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                // Silently ignore errors - Arduino might not be connected
+            }
+            
+            // Check again in 1 second
+            setTimeout(checkForNewCoins, 1000);
+        }
+
+        // Claim a coin for this session to prevent other devices from processing it
+        async function claimCoinForSession(timestamp, value) {
+            try {
+                await fetch('/api/claim-coin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        timestamp: timestamp,
+                        value: value,
+                        sessionId: sessionId
+                    })
+                });
+            } catch (error) {
+                console.log('Could not claim coin for session:', error);
+            }
+        }
+
+    // Function to generate session ID if not exists
+    function getOrCreateSessionId() {
+        if (!sessionId) {
+            sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            console.log('Generated new session ID:', sessionId);
+        }
+        return sessionId;
+    }
+
+    // Function to join the print queue
+    async function joinQueue() {
+        // If queue system is not available, skip queue and proceed directly
+        if (!queueSystemAvailable) {
+            console.log('Queue system not available, proceeding without queue');
+            return true;
+        }
+        
+        try {
+            const currentSessionId = getOrCreateSessionId();
+            
+            // CRITICAL FIX: Reset coins when joining queue
+            // This ensures each session starts with fresh coin count
+            console.log('💰 Resetting coins when joining queue');
+            resetCoins();
+            
+            const response = await fetch('/api/queue/join', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId: currentSessionId,
+                    fileName: selectedFile ? selectedFile.name : 'Unknown',
+                    pageCount: totalPages
+                })
+            });
+            
+            if (!response.ok) {
+                if (response.status === 404) {
+                    // Queue system not available on server (server needs restart)
+                    console.warn('Queue system not available on server. Server needs to be restarted to enable queue system.');
+                    queueSystemAvailable = false;
+                    showStatus('⚠️ Queue system not active. Multiple users may conflict. Please restart server.', 'warning');
+                    // Allow proceeding without queue for backward compatibility
+                    return true;
+                }
+                throw new Error(`Server error: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            if (result.success) {
+                isInQueue = true;
+                handleQueueStatus(result);
+                startQueueMonitoring();
+                return true; // Successfully joined queue
+            } else {
+                showStatus('❌ Failed to join queue', 'error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error joining queue:', error);
+            
+            // Check if it's a connection error (server might need restart)
+            if (error.message.includes('404')) {
+                queueSystemAvailable = false;
+                showStatus('⚠️ Queue system not active. Please restart server to enable queue.', 'warning');
+                // Allow proceeding without queue for backward compatibility
+                return true;
+            }
+            
+            showStatus('❌ Error joining queue. Please try again.', 'error');
+            return false; // Failed to join queue
+        }
+    }
+
+    // Function to handle queue status updates
+    function handleQueueStatus(status) {
+        if (status.status === 'active' && status.canProceed) {
+            // Only transition to active state if not already active
+            if (!isActiveInQueue) {
+                // User's turn to pay - either immediately or after waiting
+                console.log('🎯 User is now active in queue - starting timer');
+                
+                // CRITICAL FIX: Reset coins when this session becomes active
+                // This prevents coins from previous sessions from being used
+                console.log('💰 Resetting coins for new active session (was: ₱' + coinsInserted + ')');
+                resetCoins();
+
+                fetch('/api/arduino-enable-coins', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(async (enableResponse) => {
+                    try {
+                        return await enableResponse.json();
+                    } catch (_) {
+                        return { success: false };
+                    }
+                }).then((enableData) => {
+                    if (enableData && enableData.success) {
+                        console.log('✅ Arduino coin selector activated');
+                    } else {
+                        console.warn('⚠️ Failed to activate coin selector:', enableData ? enableData.error : 'Unknown error');
+                    }
+                }).catch((error) => {
+                    console.warn('⚠️ Could not enable coins:', error);
+                });
+                
+                showStatus('✅ Your turn! Please insert coins to print.', 'success');
+                document.getElementById('coinSection').style.display = 'block';
+                document.getElementById('printSection').style.display = 'block';
+                
+                // Hide queue status if it exists
+                const queueStatusDiv = document.getElementById('queueStatus');
+                if (queueStatusDiv) {
+                    queueStatusDiv.style.display = 'none';
+                }
+                
+                // Start payment timer immediately when becoming active
+                console.log('⏰ Starting payment timer for active user');
+                startTimer();
+                
+                // Mark as active to prevent repeated calls
+                isActiveInQueue = true;
+                
+                // Play a notification sound to alert user
+                playNotificationSound();
+            }
+        } else if (status.status === 'waiting' && status.position > 0) {
+            // User is waiting in queue (only show waiting UI if actually in queue)
+            isActiveInQueue = false; // Reset active flag when waiting
+            showQueueWaitingStatus(status.position, status.estimatedWait || 60);
+            document.getElementById('coinSection').style.display = 'none';
+            document.getElementById('printSection').style.display = 'none';
+        }
+    }
+
+    // Function to show queue waiting status
+    function showQueueWaitingStatus(position, estimatedWait) {
+        let queueStatusDiv = document.getElementById('queueStatus');
+        if (!queueStatusDiv) {
+            // Create queue status div if it doesn't exist
+            queueStatusDiv = document.createElement('div');
+            queueStatusDiv.id = 'queueStatus';
+            queueStatusDiv.className = 'queue-status';
+            queueStatusDiv.innerHTML = `
+                <div class="queue-status-title">🕑 Waiting in Queue</div>
+                <div class="queue-position">Your position: <span id="queuePosition">#${position}</span></div>
+                <div class="queue-message">Please wait for your turn...</div>
+                <div class="queue-estimate">Estimated wait: <span id="queueEstimate">${Math.ceil(estimatedWait / 60)} minutes</span></div>
+                <button class="queue-leave-btn" onclick="leaveQueue()">❌ Leave Queue</button>
+            `;
+            
+            // Insert after proceed section
+            const proceedSection = document.getElementById('proceedSection');
+            if (proceedSection && proceedSection.parentNode) {
+                proceedSection.parentNode.insertBefore(queueStatusDiv, proceedSection.nextSibling);
+            }
+        } else {
+            // Update existing queue status
+            queueStatusDiv.style.display = 'block';
+            const positionSpan = document.getElementById('queuePosition');
+            const estimateSpan = document.getElementById('queueEstimate');
+            if (positionSpan) positionSpan.textContent = `#${position}`;
+            if (estimateSpan) estimateSpan.textContent = `${Math.ceil(estimatedWait / 60)} minutes`;
+        }
+    }
+
+    // Function to monitor queue status
+    function startQueueMonitoring() {
+        // Clear any existing interval
+        if (queueCheckInterval) {
+            clearInterval(queueCheckInterval);
+        }
+        
+        // Check queue status every 1 second for faster response when becoming active
+        queueCheckInterval = setInterval(async () => {
+            if (!isInQueue || !sessionId) {
+                clearInterval(queueCheckInterval);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/queue/status/${sessionId}`);
+                const result = await response.json();
+                
+                if (result.success && result.exists) {
+                    // Check if status changed from waiting to active
+                    const wasWaiting = !isActiveInQueue && result.status === 'active';
+                    
+                    handleQueueStatus(result);
+                    
+                    // Log status change for debugging
+                    if (wasWaiting) {
+                        console.log('📢 Status changed: User is now active and timer should be running');
+                    }
+                    
+                    // Send heartbeat to keep session active
+                    if (result.status === 'active') {
+                        await fetch('/api/queue/heartbeat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ sessionId: sessionId })
+                        });
+                    }
+                } else {
+                    // Session no longer exists
+                    console.log('❌ Session no longer exists in queue');
+                    isInQueue = false;
+                    clearInterval(queueCheckInterval);
+                }
+            } catch (error) {
+                console.error('Error checking queue status:', error);
+            }
+        }, 1000); // Check every 1 second instead of 2 for faster activation
+    }
+
+    // Function to leave the queue
+    async function leaveQueue(showMessage = true, reason = 'Manual leave') {
+        if (!sessionId) return;
+        
+        try {
+            // Log abandoned transaction if payment was started but not completed
+            if (hasStartedPayment && selectedFile) {
+                await logAbandonedTransaction(reason);
+            }
+
+            if (isActiveInQueue) {
+                try {
+                    await fetch('/api/arduino-disable-coins', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    console.log('✅ Arduino coin selector deactivated');
+                } catch (error) {
+                    console.warn('⚠️ Could not disable coins:', error);
+                }
+            }
+            
+            const response = await fetch('/api/queue/leave', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId: sessionId })
+            });
+            
+            if (response.ok) {
+                console.log('✅ Successfully left queue - next person should be activated');
+            }
+            
+            // Clear queue status and reset flags
+            isInQueue = false;
+            isActiveInQueue = false;
+            hasStartedPayment = false;
+            clearInterval(queueCheckInterval);
+            const queueStatusDiv = document.getElementById('queueStatus');
+            if (queueStatusDiv) {
+                queueStatusDiv.style.display = 'none';
+            }
+            
+            // Only show status message if requested (avoid duplicate messages)
+            if (showMessage) {
+                showStatus('Left the queue', 'info');
+            }
+            
+            // Go back to file selection
+            backToUpload();
+        } catch (error) {
+            console.error('Error leaving queue:', error);
+        }
+    }
+
+    // Function to log abandoned transaction
+    async function logAbandonedTransaction(reason) {
+        try {
+            const pagesToPrint = selectedEndPage - selectedStartPage + 1;
+            let baseCost = selectedColor === 'colored' ? pricingConfig.shortPaper.colored : pricingConfig.shortPaper.grayscale;
+            const requiredCost = pagesToPrint * baseCost;
+            
+            console.log(`📝 Logging abandoned transaction: ${selectedFile.name} - ${reason}`);
+            
+            await fetch('/api/abandoned-transaction', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename: selectedFile.name,
+                    pagesToPrint: pagesToPrint,
+                    paperSize: selectedPaperSize,
+                    colorMode: selectedColor,
+                    requiredCost: requiredCost,
+                    coinsInserted: coinsInserted,
+                    reason: reason,
+                    sessionId: sessionId
+                })
+            });
+        } catch (error) {
+            console.error('Error logging abandoned transaction:', error);
+        }
+    }
+
+    // Function to proceed to payment section
+    async function proceedToPayment() {
+        if (!selectedFile) {
+            showStatus('❌ Please select a file first.', 'error');
+            return;
+        }
+        
+        // Mark that payment has started
+        hasStartedPayment = true;
+        console.log('✅ Payment started - hasStartedPayment set to TRUE');
+        
+        // Join the queue and wait for result
+        const queueJoined = await joinQueue();
+        
+        if (!queueJoined) {
+            // If failed to join queue, don't proceed
+            showStatus('❌ Failed to join queue. Please try again.', 'error');
+            return;
+        }
+
+        // Hide upload section only if successfully joined queue
+        document.getElementById('fileUpload').style.display = 'none';
+        document.getElementById('fileInfo').classList.remove('show');
+        document.getElementById('pageRange').style.display = 'none';
+        document.getElementById('paperSize').style.display = 'none';
+        document.getElementById('colorOptions').style.display = 'none';
+        document.getElementById('proceedSection').style.display = 'none';
+        
+        // If queue system is not available, show payment section directly
+        if (!queueSystemAvailable) {
+            // Enable coins immediately since there is no queue gating
+            try {
+                const enableResponse = await fetch('/api/arduino-enable-coins', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const enableData = await enableResponse.json();
+                if (enableData.success) {
+                    console.log('✅ Arduino coin selector activated');
+                } else {
+                    console.warn('⚠️ Failed to activate coin selector:', enableData.error);
+                }
+            } catch (error) {
+                console.warn('⚠️ Could not enable coins:', error);
+            }
+
+            document.getElementById('coinSection').style.display = 'block';
+            document.getElementById('printSection').style.display = 'block';
+            startTimer();
+        }
+
+        // Show payment section inside the existing container
+        const container = document.querySelector('.container');
+        
+        // Create payment section inside the container
+        const paymentSection = document.createElement('div');
+        paymentSection.className = 'payment-section';
+        paymentSection.innerHTML = `
+            <div class="section-header" style="text-align: center; margin-bottom: 30px;">
+                <h3 style="color: #333; font-size: 1.8rem; margin-bottom: 10px; font-weight: 700;">💰 Payment & Printing</h3>
+                <p style="color: #666; font-size: 1.1rem;">Insert coins to proceed with printing</p>
+                <div class="total-cost-display" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; margin: 20px 0; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                    <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 5px;">📋 Print Job Cost</div>
+                    <div style="font-size: 2rem; font-weight: 700; margin-bottom: 5px;" id="totalCostDisplay">₱0.00</div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;" id="costDetailsDisplay">Ready to calculate cost</div>
+                </div>
+            </div>
+            <div class="timer-section">
+                <div class="timer-label">⏰ Time Remaining</div>
+                <div class="timer-display" id="timerDisplay">01:00</div>
+                <div class="timer-warning" id="timerWarning">Complete payment within the time limit</div>
+            </div>
+            <div class="back-section" style="text-align: center; margin-top: 20px;">
+              <!-- <button class="back-btn" onclick="backToUpload()" style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 25px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                    ⬅️ Back to Upload
+                </button> -->
+            </div>
+        `;
+        
+        // Insert payment section after the header but before the upload section
+        const header = container.querySelector('.header');
+        header.insertAdjacentElement('afterend', paymentSection);
+        
+        // Show coin and print sections
+        document.getElementById('coinSection').style.display = 'block';
+        document.getElementById('printSection').style.display = 'block';
+
+        // Don't start timer here - it will be started when user becomes active
+        // Timer is started in two cases:
+        // 1. Queue system not available (line ~2198)
+        // 2. User becomes active in queue (handleQueueStatus)
+
+        // Update coin display in payment section
+        updateCoinDisplay();
+        updateCostInfo(); // Update the prominent cost display
+        checkPrintButton(); // Re-check print button in payment section
+    }
+
+    // Function to go back to upload section
+    function backToUpload() {
+        // Stop the timer
+        stopTimer();
+        
+        // Reset payment started flag
+        hasStartedPayment = false;
+        
+        // Hide payment section
+        const paymentSection = document.querySelector('.payment-section');
+        if (paymentSection) {
+            paymentSection.remove();
+        }
+        
+        // Hide queue status if visible
+        const queueStatusDiv = document.getElementById('queueStatus');
+        if (queueStatusDiv) {
+            queueStatusDiv.style.display = 'none';
+        }
+
+        // Show upload section
+        document.getElementById('fileUpload').style.display = 'block';
+        if (selectedFile) {
+            document.getElementById('fileInfo').classList.add('show');
+            document.getElementById('pageRange').style.display = 'block';
+            document.getElementById('paperSize').style.display = 'block';
+            document.getElementById('colorOptions').style.display = 'block';
+            document.getElementById('proceedSection').style.display = 'block';
+        }
+        
+        // Hide coin and print sections
+        document.getElementById('coinSection').style.display = 'none';
+        document.getElementById('printSection').style.display = 'none';
+
+        // Reset coin display to current inserted amount
+        updateCoinDisplay();
+        checkPrintButton(); // Re-check print button in upload section
+    }
+
+    // Clean up queue and log abandoned transaction on page unload
+    window.addEventListener('beforeunload', (event) => {
+        console.log('🔄 Page unload detected');
+        console.log('  hasStartedPayment:', hasStartedPayment);
+        console.log('  selectedFile:', selectedFile ? selectedFile.name : 'null');
+        console.log('  coinsInserted:', coinsInserted);
+        
+        // Log abandoned transaction if payment was started
+        if (hasStartedPayment && selectedFile) {
+            const pagesToPrint = selectedEndPage - selectedStartPage + 1;
+            let baseCost = selectedColor === 'colored' ? pricingConfig.shortPaper.colored : pricingConfig.shortPaper.grayscale;
+            const requiredCost = pagesToPrint * baseCost;
+            
+            console.log('📝 Logging abandoned transaction...');
+            console.log('  File:', selectedFile.name);
+            console.log('  Pages:', pagesToPrint);
+            console.log('  Required:', requiredCost);
+            console.log('  Inserted:', coinsInserted);
+            console.log('  Short:', requiredCost - coinsInserted);
+            
+            // Use sendBeacon with Blob for proper JSON Content-Type
+            const abandonedData = {
+                filename: selectedFile.name,
+                pagesToPrint: pagesToPrint,
+                paperSize: selectedPaperSize,
+                colorMode: selectedColor,
+                requiredCost: requiredCost,
+                coinsInserted: coinsInserted,
+                reason: 'Page closed/refreshed',
+                sessionId: sessionId
+            };
+            
+            const blob = new Blob([JSON.stringify(abandonedData)], { type: 'application/json' });
+            navigator.sendBeacon('/api/abandoned-transaction', blob);
+        }
+        
+        if (isInQueue && sessionId) {
+            const leaveBlob = new Blob([JSON.stringify({ sessionId: sessionId })], { type: 'application/json' });
+            navigator.sendBeacon('/api/queue/leave', leaveBlob);
+        }
+    });
+
+    // Initialize session ID on page load
+    getOrCreateSessionId();
+    
+    // Hide payment section initially
+    document.getElementById('coinSection').style.display = 'none';
+    document.getElementById('printSection').style.display = 'none';
+</script>
+</body>
+</html>

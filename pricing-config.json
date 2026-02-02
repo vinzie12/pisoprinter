@@ -1,0 +1,11 @@
+{
+  "shortPaper": {
+    "grayscale": 2,
+    "colored": 3
+  },
+  "longPaper": {
+    "grayscale": 5,
+    "colored": 9
+  },
+  "lastUpdated": "2025-11-19T11:20:51.346Z"
+}

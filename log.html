@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Piso Printer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
+  a.button {
+    display: inline-block; padding: 14px 24px; background: #28a745; color: #fff;
+    font-size: 20px; text-decoration: none; border-radius: 10px; margin-top: 20px;
+  }
+  p.note { margin-top: 20px; font-size: 14px; color: #444; }
+</style>
+<script>
+  // Detect device
+  window.onload = function() {
+    var ua = navigator.userAgent.toLowerCase();
+    if (ua.indexOf("android") > -1) {
+      // Android → Try to open Chrome via intent
+      window.location.href = "intent://10.0.0.1/app#Intent;scheme=http;package=com.android.chrome;end";
+    } 
+    else if (/iphone|ipad|ipod/.test(ua)) {
+      // iOS → Show instructions (can’t auto-launch Safari)
+      document.getElementById("ios").style.display = "block";
+    } 
+    else {
+      // Default → just show normal link
+      document.getElementById("default").style.display = "block";
+    }
+  }
+</script>
+</head>
+<body>
+  <h2>📄 Piso Printer</h2>
+  <p>Opening the printer page...</p>
+
+  <!-- Default fallback -->
+  <div id="default" style="display:none;">
+    <a href="http://10.0.0.1/app" class="button">👉 Open Piso Printer</a>
+    <p class="note">If it opens inside a small window, choose “Open in Browser”.</p>
+  </div>
+
+  <!-- iOS instructions -->
+  <div id="ios" style="display:none;">
+    <a href="http://10.0.0.1/app" class="button">👉 Open Piso Printer</a>
+    <p class="note">
+      If it still opens in a small window:<br>
+      1. Tap the <b>Share</b> icon<br>
+      2. Choose <b>Open in Safari</b>
+    </p>
+  </div>
+</body>
+</html>

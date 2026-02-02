@@ -1,0 +1,75 @@
+<!-- Table Logs Modal -->
+<div id="tableLogsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📋 Table Logs</h3>
+            <span class="close" onclick="closeTableLogsModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="logs-controls" style="margin-bottom: 20px;">
+                <div class="date-range-picker" style="background: #f8f9fa; border: 1px solid #e9ecef; margin-bottom: 15px;">
+                    <label for="logsDateFrom">From:</label>
+                    <input type="date" id="logsDateFrom" class="date-picker">
+                    <label for="logsDateTo">To:</label>
+                    <input type="date" id="logsDateTo" class="date-picker">
+                    <button class="btn" onclick="loadTableLogsData()">🔄 Load Logs</button>
+                </div>
+            </div>
+            
+            <div class="logs-summary" style="background: #e8f2ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #d1ecf1;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #1e3c72;" id="totalTransactions">-</div>
+                        <div style="color: #666; font-size: 0.8rem;">Total Transactions</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #28a745;" id="successfulTransactions">-</div>
+                        <div style="color: #666; font-size: 0.8rem;">Successful</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #dc3545;" id="failedTransactions">-</div>
+                        <div style="color: #666; font-size: 0.8rem;">Failed</div>
+                    </div>
+                    <!-- <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #ffc107;" id="abandonedTransactions">-</div>
+                        <div style="color: #666; font-size: 0.8rem;">Abandoned</div>
+                    </div> -->
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #1e3c72;" id="totalRevenue">-</div>
+                        <div style="color: #666; font-size: 0.8rem;">Total Revenue</div>
+                    </div>
+                </div>
+                <div style="margin-top: 10px; padding: 8px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; font-size: 0.8rem; color: #856404; text-align: center;">
+                    ℹ️ Revenue calculated from completed transactions only. Abandoned = incomplete payments.
+                </div>
+            </div>
+            
+            <div class="logs-table-container" style="overflow-x: auto;">
+                <table class="logs-table" style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <thead style="background: #1e3c72; color: white;">
+                        <tr>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">Date & Time</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">Filename</th>
+                            <th style="padding: 12px; text-align: center; font-weight: 600;">Pages</th>
+                            <th style="padding: 12px; text-align: center; font-weight: 600;">Status</th>
+                            <th style="padding: 12px; text-align: right; font-weight: 600;">Total Cost</th>
+                            <th style="padding: 12px; text-align: right; font-weight: 600;">Payment Made</th>
+                            <th style="padding: 12px; text-align: right; font-weight: 600;">Change</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <tr>
+                            <td colspan="7" style="padding: 40px; text-align: center; color: #666;">Loading logs...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="logs-actions" style="margin-top: 20px; text-align: center;">
+                <button class="btn" onclick="exportLogs()">📄 Export Logs</button>
+                <button class="btn" onclick="loadTableLogsData()">🔄 Refresh</button>
+            </div>
+        </div>
+    </div>
+</div>
+

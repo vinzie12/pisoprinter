@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Piso Printer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 10px; 
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            body { padding: 5px; }
+            .login-container { 
+                padding: 20px 15px; 
+                border-radius: 10px; 
+                margin: 10px; 
+            }
+            .logo { font-size: 2.5rem; }
+            .title { font-size: 1.5rem; }
+            .subtitle { font-size: 0.9rem; }
+            .form-group input { 
+                padding: 12px 10px; 
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            .login-btn { 
+                padding: 12px 20px; 
+                font-size: 16px; 
+            }
+            .credentials-info { 
+                font-size: 0.8rem; 
+                padding: 10px; 
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .login-container { padding: 15px 10px; }
+            .logo { font-size: 2rem; }
+            .title { font-size: 1.3rem; }
+            .form-group { margin-bottom: 15px; }
+        }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #1e3c72;
+        }
+        
+        .title {
+            font-size: 1.8rem;
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #1e3c72;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(30, 60, 114, 0.3);
+        }
+        
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        .success-message {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        .back-link {
+            margin-top: 20px;
+            display: block;
+            color: #1e3c72;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .credentials-info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #1976d2;
+        }
+        
+        .credentials-info strong {
+            color: #0d47a1;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">🖨️</div>
+        <h1 class="title">Admin Login</h1>
+        <p class="subtitle">Enter your credentials to access the admin dashboard</p>
+        
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+        
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Enter username">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter password">
+            </div>
+            
+            <button type="submit" id="loginBtn" class="login-btn">
+                <span id="loginText">🔐 Login</span>
+                <span id="loginLoading" class="loading" style="display: none;"></span>
+            </button>
+        </form>
+        
+        <a href="/" class="back-link">← Back to Piso Printer</a>
+        
+        <!-- <div class="credentials-info">
+            <strong>Available Accounts:</strong><br>
+            <strong>Superadmin:</strong> superadmin / superadmin123<br>
+            <strong>Admin:</strong> admin / admin123
+        </div> -->
+    </div>
+
+    <script>
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginText = document.getElementById('loginText');
+            const loginLoading = document.getElementById('loginLoading');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            
+            // Clear previous messages
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            // Show loading state
+            loginBtn.disabled = true;
+            loginText.style.display = 'none';
+            loginLoading.style.display = 'inline-block';
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Store authentication data
+                    localStorage.setItem('adminToken', data.token);
+                    localStorage.setItem('adminUsername', data.username);
+                    localStorage.setItem('adminRole', data.role || 'admin');
+                    localStorage.setItem('adminPermissions', JSON.stringify(data.permissions || []));
+                    localStorage.setItem('adminLoginTime', Date.now());
+                    
+                    // Show success message
+                    successMessage.textContent = `Login successful! Welcome ${data.username} (${data.role || 'admin'}). Redirecting...`;
+                    successMessage.style.display = 'block';
+                    
+                    // Redirect to admin dashboard
+                    setTimeout(() => {
+                        window.location.href = '/admin.html';
+                    }, 1000);
+                } else {
+                    // Show error message
+                    errorMessage.textContent = data.error || 'Login failed. Please check your credentials.';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorMessage.textContent = 'Network error. Please try again.';
+                errorMessage.style.display = 'block';
+            } finally {
+                // Reset button state
+                loginBtn.disabled = false;
+                loginText.style.display = 'inline';
+                loginLoading.style.display = 'none';
+            }
+        }
+        
+        // Auto-focus username field
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('username').focus();
+        });
+        
+        // Handle Enter key
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html>
